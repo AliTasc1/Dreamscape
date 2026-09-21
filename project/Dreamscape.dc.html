@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070F;font-family:Poppins,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#A9B0FF;text-decoration:none}a:hover{color:#D7DBFF}
+*{box-sizing:border-box}
+::-webkit-scrollbar{width:0;height:0}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.13);opacity:1}}
+@keyframes breatheSlow{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.35);opacity:.15}}
+@keyframes drift{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-60px,18px,0)}}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes rise{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+@keyframes moonGlow{0%,100%{box-shadow:0 0 60px 18px rgba(150,160,255,.18)}50%{box-shadow:0 0 90px 34px rgba(150,160,255,.28)}}
+@keyframes ripple{0%{transform:scale(.7);opacity:.5}100%{transform:scale(2.1);opacity:0}}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes flicker{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.85;transform:scale(1.06)}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:radial-gradient(1200px 700px at 20% -10%,#141B3A 0%,#05070F 60%);color:#EAECF7;padding:28px 32px 60px;display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap">
+
+  <div style="width:232px;flex:none;position:sticky;top:28px">
+    <div style="font:300 22px/1.2 'Cormorant Garamond',serif;letter-spacing:.06em;color:#EAECF7">DREAMSCAPE</div>
+    <div style="font:300 10px/1.6 Poppins,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(234,236,247,.38);margin-top:6px">Sleep &amp; AI dream companion</div>
+    <div style="height:1px;background:rgba(234,236,247,.1);margin:18px 0"></div>
+    <div style="font:400 9px/1 Poppins,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(234,236,247,.3);margin-bottom:10px">Screens</div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ rail }}" as="s" hint-placeholder-count="12">
+        <button onClick="{{ s.onClick }}" style="{{ s.style }}" style-hover="background:rgba(139,147,255,.14);color:#EAECF7">{{ s.label }}</button>
+      </sc-for>
+    </div>
+    <div style="height:1px;background:rgba(234,236,247,.1);margin:18px 0"></div>
+    <div style="font:300 11px/1.7 Poppins,sans-serif;color:rgba(234,236,247,.4)">Tap through the phone — every flow is live. Session UI auto-dims after 5s; tap the screen to bring it back.</div>
+  </div>
+
+  <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div style="position:relative;width:414px;height:868px;border-radius:66px;padding:12px;background:linear-gradient(160deg,#2A2F45,#0B0E1A 40%,#23283C);box-shadow:0 40px 100px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.05)">
+      <div style="position:relative;width:390px;height:844px;border-radius:54px;overflow:hidden;background:#05070F">
+
+        <div style="position:absolute;inset:0;background:radial-gradient(120% 70% at 50% -8%,#1B2450 0%,#0A0E20 45%,#05070F 100%)"></div>
+        <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+          <sc-for list="{{ stars }}" as="st" hint-placeholder-count="14">
+            <div style="{{ st.style }}"></div>
+          </sc-for>
+          <div style="position:absolute;left:-10%;top:12%;width:120%;height:220px;background:radial-gradient(60% 60% at 30% 50%,rgba(120,132,255,.10),transparent 70%);filter:blur(14px);animation:drift 46s linear infinite alternate"></div>
+        </div>
+
+        <!-- SPLASH -->
+        <sc-if value="{{ isSplash }}" hint-placeholder-val="{{ true }}">
+          <div onClick="{{ skipSplash }}" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;animation:fadeIn 1.4s ease both">
+            <div style="width:132px;height:132px;border-radius:50%;background:radial-gradient(circle at 36% 32%,#F2F0FF,#C6C9F2 45%,#8E93C8 78%,#585C86);animation:moonGlow 7s ease-in-out infinite"></div>
+            <div style="text-align:center;animation:rise 2s ease .5s both">
+              <div style="font:300 30px/1 Poppins,sans-serif;letter-spacing:.42em;padding-left:.42em;color:#F2F3FF">DREAMSCAPE</div>
+              <div style="font:300 italic 17px/1.6 'Cormorant Garamond',serif;color:rgba(234,236,247,.6);margin-top:16px">Close your eyes. We'll take you somewhere.</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ONBOARDING -->
+        <sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:78px 30px 44px">
+            <div style="flex:none;display:flex;gap:6px;justify-content:center">
+              <sc-for list="{{ obDots }}" as="d" hint-placeholder-count="5">
+                <div style="{{ d.style }}"></div>
+              </sc-for>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px">
+              <div style="position:relative;height:210px;border-radius:26px;overflow:hidden;background:{{ ob.art }};box-shadow:inset 0 -60px 80px rgba(5,7,15,.75)">
+                <div style="position:absolute;right:38px;top:34px;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 36% 32%,#F4F2FF,#B9BDE8 60%,#7A7FAE);animation:moonGlow 9s ease-in-out infinite"></div>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(180deg,transparent,rgba(5,7,15,.9))"></div>
+              </div>
+              <div style="font:300 28px/1.35 Poppins,sans-serif;color:#F2F3FF;text-wrap:pretty">{{ ob.title }}</div>
+              <div style="font:300 14.5px/1.85 Poppins,sans-serif;color:rgba(234,236,247,.55);text-wrap:pretty">{{ ob.body }}</div>
+              <sc-if value="{{ ob.quote }}" hint-placeholder-val="{{ true }}">
+                <div style="border-left:1px solid rgba(240,168,104,.5);padding:4px 0 4px 16px;font:300 italic 15px/1.9 'Cormorant Garamond',serif;color:rgba(240,215,190,.8);white-space:pre-line">{{ ob.quote }}</div>
+              </sc-if>
+            </div>
+            <div style="flex:none;display:flex;flex-direction:column;gap:14px">
+              <button onClick="{{ obNext }}" style="width:100%;height:56px;border:none;border-radius:28px;background:linear-gradient(120deg,#6E76D8,#8E7FD0 60%,#C08C7A);color:#0B0E1A;font:500 15px Poppins,sans-serif;letter-spacing:.02em;cursor:pointer;transition:transform .5s ease,box-shadow .5s ease;box-shadow:0 14px 40px rgba(110,118,216,.3)" style-hover="transform:scale(1.02);box-shadow:0 18px 54px rgba(110,118,216,.45)">{{ ob.cta }}</button>
+              <button onClick="{{ goHome }}" style="width:100%;height:24px;border:none;background:none;color:rgba(234,236,247,.35);font:300 12.5px Poppins,sans-serif;cursor:pointer" style-hover="color:rgba(234,236,247,.7)">Skip</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- HOME -->
+        <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 130px">
+            <div style="font:300 13px/1 Poppins,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:rgba(234,236,247,.35)">Good night, Ali</div>
+            <div style="font:300 27px/1.4 'Cormorant Garamond',serif;color:#F2F3FF;margin-top:14px;text-wrap:pretty">What would you like to imagine tonight?</div>
+
+            <div style="margin-top:26px;position:relative;border-radius:28px;overflow:hidden;height:280px;background:linear-gradient(170deg,#1C2A4A,#0E1428 55%,#0A0D1C);box-shadow:0 24px 60px rgba(0,0,0,.5)">
+              <div style="position:absolute;inset:0;background:radial-gradient(70% 50% at 70% 18%,rgba(150,170,255,.22),transparent 65%),radial-gradient(50% 40% at 20% 85%,rgba(240,168,104,.14),transparent 70%)"></div>
+              <div style="position:absolute;left:-20%;bottom:-40px;width:140%;height:160px;background:radial-gradient(60% 100% at 50% 100%,rgba(30,45,90,.9),transparent 70%);animation:drift 38s ease-in-out infinite alternate"></div>
+              <div style="position:absolute;inset:0;padding:24px;display:flex;flex-direction:column;justify-content:space-between">
+                <div style="align-self:flex-start;padding:7px 14px;border-radius:999px;background:rgba(234,236,247,.1);backdrop-filter:blur(8px);font:400 10px Poppins,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(234,236,247,.72)">Tonight's dream</div>
+                <div>
+                  <div style="font:300 30px/1.2 'Cormorant Garamond',serif;color:#F7F6FF">Moonlit Forest</div>
+                  <div style="font:300 13.5px/1.7 Poppins,sans-serif;color:rgba(234,236,247,.55);margin-top:8px;max-width:270px;text-wrap:pretty">A slow journey through a quiet forest beneath the stars.</div>
+                  <div style="display:flex;align-items:center;gap:12px;margin-top:18px">
+                    <button onClick="{{ beginTonight }}" style="height:46px;padding:0 30px;border:none;border-radius:23px;background:#F2F3FF;color:#0B0E1A;font:500 14px Poppins,sans-serif;cursor:pointer;transition:transform .5s ease" style-hover="transform:scale(1.04)">Begin</button>
+                    <div style="font:300 12px Poppins,sans-serif;color:rgba(234,236,247,.4)">28 min · Rain + Forest</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:30px;font:400 10px Poppins,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(234,236,247,.32)">Create your own world</div>
+            <div onClick="{{ goCreate }}" style="margin-top:12px;border-radius:24px;padding:22px;background:rgba(139,147,255,.07);border:1px solid rgba(234,236,247,.08);cursor:pointer;transition:background .6s ease,transform .6s ease" style-hover="background:rgba(139,147,255,.12);transform:translateY(-2px)">
+              <div style="font:300 15px/1.6 Poppins,sans-serif;color:rgba(234,236,247,.45)">Describe what you want to imagine…</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:18px">
+                <sc-for list="{{ homeExamples }}" as="e" hint-placeholder-count="4">
+                  <div style="padding:8px 13px;border-radius:999px;background:rgba(234,236,247,.05);border:1px solid rgba(234,236,247,.07);font:300 12px Poppins,sans-serif;color:rgba(234,236,247,.55)">{{ e }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="margin-top:30px;display:flex;align-items:baseline;justify-content:space-between">
+              <div style="font:400 10px Poppins,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(234,236,247,.32)">Return to a world</div>
+              <button onClick="{{ goNights }}" style="border:none;background:none;color:rgba(169,176,255,.7);font:300 12px Poppins,sans-serif;cursor:pointer">My nights</button>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:12px;overflow-x:auto;padding-bottom:4px">
+              <sc-for list="{{ favorites }}" as="f" hint-placeholder-count="3">
+                <div onClick="{{ f.onClick }}" style="{{ f.style }}" style-hover="transform:translateY(-3px)">
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(5,7,15,.88))"></div>
+                  <div style="position:absolute;left:14px;right:14px;bottom:14px">
+                    <div style="font:400 14px/1.3 Poppins,sans-serif;color:#F2F3FF">{{ f.title }}</div>
+                    <div style="font:300 11px Poppins,sans-serif;color:rgba(234,236,247,.45);margin-top:4px">{{ f.meta }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- CREATE -->
+        <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 200px">
+            <div style="font:300 26px/1.4 'Cormorant Garamond',serif;color:#F2F3FF">Where should we go tonight?</div>
+            <div style="margin-top:22px;border-radius:24px;background:rgba(139,147,255,.07);border:1px solid rgba(234,236,247,.1);padding:18px">
+              <textarea onChange="{{ onPrompt }}" value="{{ prompt }}" placeholder="Describe the place, atmosphere or story you want to experience…" style="width:100%;height:132px;resize:none;border:none;outline:none;background:transparent;color:#EAECF7;font:300 15px/1.85 Poppins,sans-serif"></textarea>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                <button onClick="{{ fillExample }}" style="border:none;background:none;padding:0;color:rgba(169,176,255,.75);font:300 12px Poppins,sans-serif;cursor:pointer">Use an example</button>
+                <button onClick="{{ toggleTalk }}" style="width:38px;height:38px;border-radius:50%;border:1px solid rgba(234,236,247,.14);background:rgba(234,236,247,.05);color:rgba(234,236,247,.6);font:300 10px Poppins,sans-serif;cursor:pointer" style-hover="background:rgba(234,236,247,.12)">mic</button>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:20px">
+              <sc-for list="{{ chipList }}" as="c" hint-placeholder-count="9">
+                <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+              </sc-for>
+            </div>
+
+            <div onClick="{{ openSheet }}" style="margin-top:24px;display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-radius:20px;background:rgba(234,236,247,.04);border:1px solid rgba(234,236,247,.07);cursor:pointer" style-hover="background:rgba(234,236,247,.08)">
+              <div>
+                <div style="font:400 13px Poppins,sans-serif;color:rgba(234,236,247,.8)">Voice, ambience &amp; length</div>
+                <div style="font:300 11.5px Poppins,sans-serif;color:rgba(234,236,247,.4);margin-top:5px">{{ settingsSummary }}</div>
+              </div>
+              <div style="color:rgba(234,236,247,.35);font:300 18px Poppins,sans-serif">›</div>
+            </div>
+
+            <div style="margin-top:26px;font:300 italic 14px/1.8 'Cormorant Garamond',serif;color:rgba(234,236,247,.35);text-wrap:pretty">One sentence is enough. Everything else is optional.</div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:20px 22px 34px;background:linear-gradient(180deg,transparent,rgba(5,7,15,.92) 45%)">
+            <button onClick="{{ startGen }}" style="width:100%;height:58px;border:none;border-radius:29px;background:linear-gradient(120deg,#6E76D8,#9A82CE 55%,#E3A176);color:#0B0E1A;font:500 15.5px Poppins,sans-serif;cursor:pointer;box-shadow:0 16px 46px rgba(110,118,216,.35);transition:transform .5s ease" style-hover="transform:scale(1.015)">Take Me There</button>
+          </div>
+        </sc-if>
+
+        <!-- GENERATION -->
+        <sc-if value="{{ isGen }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:52px;animation:fadeIn 1.2s ease both">
+            <div style="position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center">
+              <div style="position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(139,147,255,.28),transparent 68%);animation:breatheSlow 7s ease-in-out infinite"></div>
+              <div style="position:absolute;width:150px;height:150px;border-radius:50%;border:1px solid rgba(169,176,255,.18);animation:ripple 6s ease-out infinite"></div>
+              <div style="width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#E7E6FF,#9EA2F0 45%,#5F63B8 80%);box-shadow:0 0 70px 14px rgba(139,147,255,.35);animation:breathe 6s ease-in-out infinite"></div>
+            </div>
+            <div style="text-align:center;padding:0 40px">
+              <div style="font:300 20px/1.5 Poppins,sans-serif;color:#F2F3FF;min-height:30px">{{ genPhrase }}</div>
+              <div style="width:120px;height:1px;background:rgba(234,236,247,.12);margin:24px auto 0;position:relative;overflow:hidden">
+                <div style="{{ genBarStyle }}"></div>
+              </div>
+            </div>
+            <sc-if value="{{ genReady }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ enterSession }}" style="position:absolute;bottom:96px;height:56px;padding:0 54px;border:none;border-radius:28px;background:#F2F3FF;color:#0B0E1A;font:500 15px Poppins,sans-serif;cursor:pointer;animation:rise 1.4s ease both;transition:transform .5s ease" style-hover="transform:scale(1.04)">Enter</button>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- SESSION -->
+        <sc-if value="{{ isSession }}" hint-placeholder-val="{{ true }}">
+          <div onClick="{{ wakeUI }}" style="position:absolute;inset:0;background:radial-gradient(90% 60% at 50% 18%,#101A38,#060A16 60%,#03050C)">
+            <div style="position:absolute;left:0;right:0;bottom:0;height:240px;background:linear-gradient(180deg,transparent,rgba(16,26,56,.8));overflow:hidden">
+              <div style="position:absolute;bottom:60px;left:0;width:200%;height:120px;background:repeating-linear-gradient(90deg,rgba(120,140,220,.07) 0 60px,transparent 60px 120px);filter:blur(6px);animation:wave 28s linear infinite"></div>
+            </div>
+            <div style="position:absolute;left:50%;bottom:118px;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(240,168,104,.5),transparent 65%);filter:blur(8px);animation:flicker 4.5s ease-in-out infinite"></div>
+
+            <div style="position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;width:240px;height:240px">
+              <div style="position:absolute;width:210px;height:210px;border-radius:50%;border:1px solid rgba(169,176,255,.12);animation:ripple 8s ease-out infinite"></div>
+              <div style="{{ orbStyle }}"></div>
+            </div>
+
+            <div style="{{ sessionUiStyle }}">
+              <div style="position:absolute;top:62px;left:22px;right:22px;display:flex;align-items:center;justify-content:space-between">
+                <button onClick="{{ goComplete }}" style="border:none;background:rgba(234,236,247,.07);color:rgba(234,236,247,.6);padding:9px 16px;border-radius:999px;font:300 12px Poppins,sans-serif;cursor:pointer">End</button>
+                <div style="font:300 11px Poppins,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(234,236,247,.4)">{{ sessionState }}</div>
+                <button onClick="{{ goSleepFade }}" style="border:none;background:rgba(234,236,247,.07);color:rgba(234,236,247,.6);padding:9px 16px;border-radius:999px;font:300 12px Poppins,sans-serif;cursor:pointer">Sleep</button>
+              </div>
+
+              <div style="position:absolute;left:24px;right:24px;top:56%;text-align:center;font:300 italic 20px/1.9 'Cormorant Garamond',serif;color:rgba(234,236,247,.72);text-wrap:pretty">{{ narration }}</div>
+
+              <div style="position:absolute;left:22px;right:22px;bottom:44px;display:flex;flex-direction:column;gap:18px">
+                <div style="display:flex;align-items:center;gap:14px">
+                  <div style="font:300 10px Poppins,sans-serif;color:rgba(234,236,247,.35);width:34px">Rain</div>
+                  <div style="flex:1;height:2px;background:rgba(234,236,247,.12);border-radius:2px;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:62%;background:rgba(169,176,255,.6);border-radius:2px"></div><div style="position:absolute;left:62%;top:-4px;width:10px;height:10px;border-radius:50%;background:#EAECF7"></div></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <button onClick="{{ toggleTalk }}" style="width:52px;height:52px;border-radius:50%;border:1px solid rgba(234,236,247,.14);background:rgba(234,236,247,.05);color:rgba(234,236,247,.65);font:300 11px Poppins,sans-serif;cursor:pointer" style-hover="background:rgba(234,236,247,.12)">Talk</button>
+                  <button onClick="{{ togglePlay }}" style="width:74px;height:74px;border-radius:50%;border:none;background:rgba(234,236,247,.92);color:#0B0E1A;font:400 12px Poppins,sans-serif;cursor:pointer;box-shadow:0 0 40px rgba(234,236,247,.18);transition:transform .5s ease" style-hover="transform:scale(1.05)">{{ playLabel }}</button>
+                  <button onClick="{{ openSheet }}" style="width:52px;height:52px;border-radius:50%;border:1px solid rgba(234,236,247,.14);background:rgba(234,236,247,.05);color:rgba(234,236,247,.65);font:300 11px Poppins,sans-serif;cursor:pointer" style-hover="background:rgba(234,236,247,.12)">Mix</button>
+                </div>
+              </div>
+            </div>
+
+            <sc-if value="{{ talking }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;left:0;right:0;bottom:0;top:0;background:rgba(5,7,15,.6);backdrop-filter:blur(16px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;animation:fadeIn .8s ease both">
+                <div style="font:300 italic 22px/1.6 'Cormorant Garamond',serif;color:rgba(234,236,247,.8)">Tell me…</div>
+                <div style="display:flex;align-items:flex-end;gap:7px;height:52px">
+                  <sc-for list="{{ voiceBars }}" as="b" hint-placeholder-count="7">
+                    <div style="{{ b.style }}"></div>
+                  </sc-for>
+                </div>
+                <div style="font:300 13.5px/1.9 Poppins,sans-serif;color:rgba(234,236,247,.45);max-width:250px;text-align:center;text-wrap:pretty">“Tell me something about love.”</div>
+                <button onClick="{{ toggleTalk }}" style="height:48px;padding:0 34px;border-radius:24px;border:1px solid rgba(234,236,247,.16);background:transparent;color:rgba(234,236,247,.7);font:300 13px Poppins,sans-serif;cursor:pointer">Back to the dream</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- SLEEP FADE -->
+        <sc-if value="{{ isFade }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;background:#03050B;display:flex;align-items:center;justify-content:center;animation:fadeIn 2.5s ease both">
+            <div style="text-align:center">
+              <div style="width:8px;height:8px;border-radius:50%;background:rgba(234,236,247,.45);margin:0 auto 26px;animation:breathe 7s ease-in-out infinite"></div>
+              <div style="font:300 italic 26px 'Cormorant Garamond',serif;color:rgba(234,236,247,.42)">Good night.</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- COMPLETE -->
+        <sc-if value="{{ isComplete }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;padding:96px 26px 44px;display:flex;flex-direction:column;animation:fadeIn 1.4s ease both">
+            <div style="font:300 11px Poppins,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:rgba(234,236,247,.35)">Session complete</div>
+            <div style="font:300 30px/1.3 'Cormorant Garamond',serif;color:#F2F3FF;margin-top:14px">Rain on the Coast</div>
+            <div style="display:flex;gap:26px;margin-top:34px">
+              <sc-for list="{{ summaryStats }}" as="s" hint-placeholder-count="3">
+                <div>
+                  <div style="font:300 26px Poppins,sans-serif;color:#F2F3FF">{{ s.value }}</div>
+                  <div style="font:300 11px Poppins,sans-serif;color:rgba(234,236,247,.38);margin-top:4px">{{ s.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:34px;padding:20px;border-radius:20px;background:rgba(139,147,255,.06);border:1px solid rgba(234,236,247,.07);font:300 italic 15px/1.9 'Cormorant Garamond',serif;color:rgba(234,236,247,.6);white-space:pre-line">{{ savedPrompt }}</div>
+            <div style="flex:1"></div>
+            <div style="display:flex;gap:12px">
+              <button onClick="{{ goNights }}" style="flex:1;height:54px;border-radius:27px;border:1px solid rgba(234,236,247,.16);background:transparent;color:rgba(234,236,247,.75);font:300 14px Poppins,sans-serif;cursor:pointer">Save to My Nights</button>
+              <button onClick="{{ enterSession }}" style="flex:1;height:54px;border-radius:27px;border:none;background:#F2F3FF;color:#0B0E1A;font:500 14px Poppins,sans-serif;cursor:pointer">Replay</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- EXPLORE -->
+        <sc-if value="{{ isExplore }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 130px">
+            <div style="font:300 26px/1.3 'Cormorant Garamond',serif;color:#F2F3FF">Worlds to wander</div>
+            <div style="display:flex;gap:8px;overflow-x:auto;margin-top:20px;padding-bottom:4px">
+              <sc-for list="{{ categories }}" as="c" hint-placeholder-count="6">
+                <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-top:22px">
+              <sc-for list="{{ exploreCards }}" as="e" hint-placeholder-count="4">
+                <div onClick="{{ e.onClick }}" style="{{ e.style }}" style-hover="transform:translateY(-3px)">
+                  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,7,15,.9) 25%,transparent)"></div>
+                  <div style="position:absolute;left:20px;right:110px;top:50%;transform:translateY(-50%)">
+                    <div style="font:400 16px/1.3 Poppins,sans-serif;color:#F2F3FF">{{ e.title }}</div>
+                    <div style="font:300 12px/1.6 Poppins,sans-serif;color:rgba(234,236,247,.45);margin-top:6px;text-wrap:pretty">{{ e.desc }}</div>
+                    <div style="font:300 11px Poppins,sans-serif;color:rgba(234,236,247,.32);margin-top:8px">{{ e.meta }}</div>
+                  </div>
+                  <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(234,236,247,.12);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;color:#F2F3FF;font:300 12px Poppins,sans-serif">▶</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- MY NIGHTS -->
+        <sc-if value="{{ isNights }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 130px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between">
+              <div style="font:300 26px 'Cormorant Garamond',serif;color:#F2F3FF">My Nights</div>
+              <button onClick="{{ toggleEmpty }}" style="border:none;background:none;color:rgba(169,176,255,.6);font:300 11px Poppins,sans-serif;cursor:pointer">{{ emptyToggleLabel }}</button>
+            </div>
+            <sc-if value="{{ nightsEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:120px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:22px">
+                <div style="width:70px;height:70px;border-radius:50%;border:1px solid rgba(234,236,247,.12);display:flex;align-items:center;justify-content:center"><div style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 36% 32%,#EFEEFF,#8E93C8);opacity:.5"></div></div>
+                <div style="font:300 italic 20px 'Cormorant Garamond',serif;color:rgba(234,236,247,.7)">Your first journey is waiting.</div>
+                <div style="font:300 13px/1.8 Poppins,sans-serif;color:rgba(234,236,247,.38);max-width:230px;text-wrap:pretty">Describe a place tonight and it will live here in the morning.</div>
+                <button onClick="{{ goCreate }}" style="height:50px;padding:0 32px;border-radius:25px;border:none;background:#F2F3FF;color:#0B0E1A;font:500 14px Poppins,sans-serif;cursor:pointer">Create a Dream</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ nightsFilled }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px">
+                <sc-for list="{{ nights }}" as="n" hint-placeholder-count="4">
+                  <div onClick="{{ n.onClick }}" style="display:flex;gap:14px;padding:14px;border-radius:20px;background:rgba(234,236,247,.04);border:1px solid rgba(234,236,247,.06);cursor:pointer" style-hover="background:rgba(234,236,247,.08)">
+                    <div style="{{ n.thumb }}"></div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font:400 14.5px Poppins,sans-serif;color:#F2F3FF">{{ n.title }}</div>
+                      <div style="font:300 11.5px Poppins,sans-serif;color:rgba(234,236,247,.4);margin-top:5px">{{ n.meta }}</div>
+                      <div style="font:300 11.5px Poppins,sans-serif;color:rgba(240,168,104,.6);margin-top:4px">{{ n.ambient }}</div>
+                    </div>
+                    <div style="align-self:center;color:rgba(234,236,247,.3);font:300 16px Poppins,sans-serif">›</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- DREAM DETAIL -->
+        <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto">
+            <div style="position:relative;height:330px;background:linear-gradient(170deg,#23304F,#0E1428 60%);overflow:hidden">
+              <div style="position:absolute;inset:0;background:radial-gradient(60% 45% at 65% 25%,rgba(150,170,255,.25),transparent 70%),radial-gradient(45% 35% at 25% 85%,rgba(240,168,104,.18),transparent 70%)"></div>
+              <div style="position:absolute;left:0;right:0;bottom:0;height:140px;background:linear-gradient(180deg,transparent,#05070F)"></div>
+              <button onClick="{{ goNights }}" style="position:absolute;top:60px;left:20px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(5,7,15,.4);backdrop-filter:blur(8px);color:#EAECF7;font:300 16px Poppins,sans-serif;cursor:pointer">‹</button>
+              <button onClick="{{ toggleFav }}" style="position:absolute;top:60px;right:20px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(5,7,15,.4);backdrop-filter:blur(8px);color:#F0A868;font:300 14px Poppins,sans-serif;cursor:pointer">{{ favIcon }}</button>
+            </div>
+            <div style="padding:0 24px 140px;margin-top:-40px;position:relative">
+              <div style="font:300 30px/1.25 'Cormorant Garamond',serif;color:#F7F6FF">{{ detail.title }}</div>
+              <div style="font:300 12px Poppins,sans-serif;color:rgba(234,236,247,.4);margin-top:10px">{{ detail.meta }}</div>
+              <div style="margin-top:22px;font:300 14px/1.9 Poppins,sans-serif;color:rgba(234,236,247,.6);text-wrap:pretty">{{ detail.desc }}</div>
+              <div style="margin-top:24px;padding:18px;border-radius:18px;background:rgba(139,147,255,.06);border:1px solid rgba(234,236,247,.07);font:300 italic 14.5px/1.9 'Cormorant Garamond',serif;color:rgba(234,236,247,.55);white-space:pre-line">{{ detail.prompt }}</div>
+              <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
+                <sc-for list="{{ detail.tags }}" as="t" hint-placeholder-count="3">
+                  <div style="padding:8px 14px;border-radius:999px;background:rgba(234,236,247,.05);border:1px solid rgba(234,236,247,.08);font:300 12px Poppins,sans-serif;color:rgba(234,236,247,.55)">{{ t }}</div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:18px 24px 34px;background:linear-gradient(180deg,transparent,rgba(5,7,15,.95) 40%)">
+              <button onClick="{{ beginTonight }}" style="width:100%;height:56px;border:none;border-radius:28px;background:#F2F3FF;color:#0B0E1A;font:500 15px Poppins,sans-serif;cursor:pointer">Replay this night</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- COMPANION -->
+        <sc-if value="{{ isCompanion }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 130px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:18px">
+              <div style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#E7E6FF,#9EA2F0 45%,#5F63B8 80%);box-shadow:0 0 56px 10px rgba(139,147,255,.28);animation:breathe 7s ease-in-out infinite"></div>
+              <div style="font:300 24px 'Cormorant Garamond',serif;color:#F2F3FF">Selen</div>
+              <div style="font:300 12.5px Poppins,sans-serif;color:rgba(234,236,247,.4)">Your companion for 43 nights</div>
+            </div>
+            <div style="margin-top:34px;display:flex;flex-direction:column;gap:26px">
+              <sc-for list="{{ companionGroups }}" as="g" hint-placeholder-count="4">
+                <div>
+                  <div style="font:400 10px Poppins,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(234,236,247,.32)">{{ g.label }}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+                    <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="4">
+                      <button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- PROFILE -->
+        <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 130px">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="width:62px;height:62px;border-radius:50%;background:linear-gradient(140deg,#3A4573,#1A2040);border:1px solid rgba(234,236,247,.1)"></div>
+              <div>
+                <div style="font:300 22px 'Cormorant Garamond',serif;color:#F2F3FF">Good evening, Ali.</div>
+                <div style="font:300 11.5px Poppins,sans-serif;color:rgba(234,236,247,.38);margin-top:4px">Dreamscape Premium</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:26px">
+              <sc-for list="{{ profileStats }}" as="s" hint-placeholder-count="3">
+                <div style="flex:1;padding:16px 14px;border-radius:18px;background:rgba(234,236,247,.04);border:1px solid rgba(234,236,247,.06)">
+                  <div style="font:300 22px Poppins,sans-serif;color:#F2F3FF">{{ s.value }}</div>
+                  <div style="font:300 10.5px/1.4 Poppins,sans-serif;color:rgba(234,236,247,.38);margin-top:6px">{{ s.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:26px;display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ settingsRows }}" as="r" hint-placeholder-count="8">
+                <button onClick="{{ r.onClick }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:17px 16px;border:none;border-radius:14px;background:transparent;color:rgba(234,236,247,.75);font:300 14px Poppins,sans-serif;cursor:pointer;text-align:left" style-hover="background:rgba(234,236,247,.05)">
+                  <span>{{ r.label }}</span><span style="color:rgba(234,236,247,.3);font-size:12px">{{ r.value }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- PRIVACY -->
+        <sc-if value="{{ isPrivacy }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 130px">
+            <button onClick="{{ goProfile }}" style="border:none;background:none;padding:0;color:rgba(234,236,247,.45);font:300 13px Poppins,sans-serif;cursor:pointer">‹ Profile</button>
+            <div style="font:300 26px/1.35 'Cormorant Garamond',serif;color:#F2F3FF;margin-top:18px;text-wrap:pretty">What you imagine stays yours.</div>
+            <div style="font:300 13.5px/1.9 Poppins,sans-serif;color:rgba(234,236,247,.5);margin-top:14px;text-wrap:pretty">Your dreams can be personal. Here is exactly what happens to them.</div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:26px">
+              <sc-for list="{{ privacyRows }}" as="p" hint-placeholder-count="4">
+                <div style="padding:18px;border-radius:18px;background:rgba(234,236,247,.04);border:1px solid rgba(234,236,247,.06)">
+                  <div style="font:400 13.5px Poppins,sans-serif;color:rgba(234,236,247,.85)">{{ p.title }}</div>
+                  <div style="font:300 12.5px/1.8 Poppins,sans-serif;color:rgba(234,236,247,.45);margin-top:7px;text-wrap:pretty">{{ p.body }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:22px">
+              <button style="flex:1;height:50px;border-radius:25px;border:1px solid rgba(234,236,247,.14);background:transparent;color:rgba(234,236,247,.7);font:300 13px Poppins,sans-serif;cursor:pointer">Export my data</button>
+              <button style="flex:1;height:50px;border-radius:25px;border:1px solid rgba(226,130,130,.3);background:transparent;color:rgba(226,140,140,.85);font:300 13px Poppins,sans-serif;cursor:pointer">Delete everything</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- PREMIUM -->
+        <sc-if value="{{ isPremium }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:0 0 130px;background:radial-gradient(90% 50% at 50% 0%,#23204A,#0A0D1C 60%,#05070F)">
+            <div style="position:relative;height:250px;overflow:hidden">
+              <div style="position:absolute;left:50%;top:70px;transform:translateX(-50%);width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#F6F1FF,#C3A9E8 45%,#7A6AA8 80%);animation:moonGlow 8s ease-in-out infinite"></div>
+              <div style="position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(180deg,transparent,#0A0D1C)"></div>
+            </div>
+            <div style="padding:0 26px">
+              <div style="font:300 30px/1.3 'Cormorant Garamond',serif;color:#F7F6FF;text-align:center">Go deeper into your dreams.</div>
+              <div style="display:flex;flex-direction:column;gap:14px;margin-top:30px">
+                <sc-for list="{{ premiumFeatures }}" as="f" hint-placeholder-count="5">
+                  <div style="display:flex;gap:13px;align-items:flex-start">
+                    <div style="width:5px;height:5px;border-radius:50%;background:rgba(240,168,104,.8);margin-top:8px;flex:none"></div>
+                    <div style="font:300 14px/1.7 Poppins,sans-serif;color:rgba(234,236,247,.65)">{{ f }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:30px">
+                <sc-for list="{{ plans }}" as="p" hint-placeholder-count="2">
+                  <div onClick="{{ p.onClick }}" style="{{ p.style }}">
+                    <div style="font:400 12.5px Poppins,sans-serif;color:rgba(234,236,247,.7)">{{ p.name }}</div>
+                    <div style="font:300 22px Poppins,sans-serif;color:#F2F3FF;margin-top:8px">{{ p.price }}</div>
+                    <div style="font:300 11px Poppins,sans-serif;color:rgba(234,236,247,.38);margin-top:6px">{{ p.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <button style="width:100%;height:56px;margin-top:20px;border:none;border-radius:28px;background:linear-gradient(120deg,#6E76D8,#9A82CE 55%,#E3A176);color:#0B0E1A;font:500 15px Poppins,sans-serif;cursor:pointer">Start 7 quiet nights free</button>
+              <div style="text-align:center;font:300 11px Poppins,sans-serif;color:rgba(234,236,247,.3);margin-top:14px">Cancel any time. No reminders, ever.</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- NOTIFICATIONS -->
+        <sc-if value="{{ isNotif }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;padding:70px 22px 130px">
+            <button onClick="{{ goProfile }}" style="border:none;background:none;padding:0;color:rgba(234,236,247,.45);font:300 13px Poppins,sans-serif;cursor:pointer">‹ Profile</button>
+            <div style="font:300 26px 'Cormorant Garamond',serif;color:#F2F3FF;margin-top:18px">A gentle nudge</div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px">
+              <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="3">
+                <div style="padding:16px 18px;border-radius:18px;background:rgba(234,236,247,.05);border:1px solid rgba(234,236,247,.07);backdrop-filter:blur(10px);display:flex;gap:13px;align-items:center">
+                  <div style="width:34px;height:34px;border-radius:10px;background:radial-gradient(circle at 36% 30%,#D9D8FF,#6E72C0);flex:none"></div>
+                  <div style="flex:1">
+                    <div style="font:400 12.5px Poppins,sans-serif;color:rgba(234,236,247,.85)">Dreamscape</div>
+                    <div style="font:300 12.5px/1.6 Poppins,sans-serif;color:rgba(234,236,247,.5);margin-top:3px">{{ n }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:28px;display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ notifToggles }}" as="t" hint-placeholder-count="4">
+                <div onClick="{{ t.onClick }}" style="display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:14px;cursor:pointer" style-hover="background:rgba(234,236,247,.04)">
+                  <div style="font:300 13.5px Poppins,sans-serif;color:rgba(234,236,247,.7)">{{ t.label }}</div>
+                  <div style="{{ t.trackStyle }}"><div style="{{ t.knobStyle }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ERROR -->
+        <sc-if value="{{ isError }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:0 44px;text-align:center">
+            <div style="width:60px;height:60px;border-radius:50%;border:1px solid rgba(234,236,247,.12);animation:breathe 8s ease-in-out infinite"></div>
+            <div style="font:300 italic 24px/1.5 'Cormorant Garamond',serif;color:rgba(234,236,247,.75)">We lost the thread for a moment.</div>
+            <div style="font:300 13px/1.8 Poppins,sans-serif;color:rgba(234,236,247,.4)">Nothing is broken. Let's try again.</div>
+            <button onClick="{{ enterSession }}" style="height:52px;padding:0 34px;border-radius:26px;border:none;background:#F2F3FF;color:#0B0E1A;font:500 14px Poppins,sans-serif;cursor:pointer;margin-top:10px">Return to the Dream</button>
+          </div>
+        </sc-if>
+
+        <!-- BOTTOM SHEET -->
+        <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(3,5,11,.6);backdrop-filter:blur(6px);animation:fadeIn .5s ease both"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;max-height:78%;overflow-y:auto;border-radius:30px 30px 54px 54px;background:linear-gradient(180deg,#121732,#0A0D1C);border-top:1px solid rgba(234,236,247,.1);padding:14px 22px 40px;animation:rise .6s cubic-bezier(.2,.8,.2,1) both">
+            <div style="width:40px;height:4px;border-radius:2px;background:rgba(234,236,247,.2);margin:0 auto 20px"></div>
+            <div style="display:flex;flex-direction:column;gap:24px">
+              <sc-for list="{{ sheetGroups }}" as="g" hint-placeholder-count="4">
+                <div>
+                  <div style="font:400 10px Poppins,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(234,236,247,.32)">{{ g.label }}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+                    <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="5">
+                      <button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <button onClick="{{ closeSheet }}" style="width:100%;height:54px;margin-top:26px;border:none;border-radius:27px;background:rgba(234,236,247,.92);color:#0B0E1A;font:500 14px Poppins,sans-serif;cursor:pointer">Done</button>
+          </div>
+        </sc-if>
+
+        <!-- BOTTOM NAV -->
+        <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:0;right:0;bottom:0;height:104px;padding:0 18px 22px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,transparent,rgba(5,7,15,.92) 45%);backdrop-filter:blur(10px)">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+              <button onClick="{{ n.onClick }}" style="{{ n.wrapStyle }}">
+                <div style="{{ n.dotStyle }}"></div>
+                <div style="{{ n.labelStyle }}">{{ n.label }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- STATUS BAR + DYNAMIC ISLAND -->
+        <div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:14px 30px 0;pointer-events:none">
+          <div style="font:500 13px Poppins,sans-serif;color:rgba(242,243,255,.85)">23:41</div>
+          <div style="display:flex;gap:6px;align-items:center;opacity:.7"><div style="width:16px;height:9px;border-radius:2px;border:1px solid rgba(242,243,255,.8)"></div><div style="width:15px;height:9px;border-radius:2px;background:rgba(242,243,255,.8)"></div></div>
+        </div>
+        <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:112px;height:33px;border-radius:20px;background:#000;pointer-events:none"></div>
+        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(242,243,255,.35);pointer-events:none"></div>
+
+      </div>
+    </div>
+    <div style="font:300 11.5px Poppins,sans-serif;color:rgba(234,236,247,.3)">{{ screenLabel }} · 390 × 844</div>
+  </div>
+
+  <div style="flex:1;min-width:260px;max-width:340px;display:flex;flex-direction:column;gap:18px;padding-top:6px">
+    <div style="font:400 10px Poppins,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(234,236,247,.3)">Design notes</div>
+    <div style="font:300 13px/1.9 Poppins,sans-serif;color:rgba(234,236,247,.5);text-wrap:pretty">Everything is built around one rule: the phone must get darker, quieter and emptier the closer the user gets to sleep. Navigation disappears at session start; controls dim after five seconds; the sleep fade ends on a single word.</div>
+    <div style="height:1px;background:rgba(234,236,247,.1)"></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ notes }}" as="n" hint-placeholder-count="4">
+        <div>
+          <div style="font:400 12px Poppins,sans-serif;color:rgba(234,236,247,.75)">{{ n.title }}</div>
+          <div style="font:300 12px/1.75 Poppins,sans-serif;color:rgba(234,236,247,.42);margin-top:5px;text-wrap:pretty">{{ n.body }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="height:1px;background:rgba(234,236,247,.1)"></div>
+    <div style="font:300 12px/1.8 Poppins,sans-serif;color:rgba(234,236,247,.35);text-wrap:pretty">Next: dream-detail sharing, Android variant, and real ambient audio mixing on the session screen.</div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:960}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'splash', ob: 0, prompt: '', chips: ['Rain', 'Campfire'],
+    voice: 'Warm', mood: 'Calm', amb: 'Rain', dur: 'Until sleep',
+    style: 'Story', tone: 'Peaceful', speed: 'Slow', intensity: 'Soft',
+    sheet: false, gen: 0, ready: false, ui: true, talk: false, playing: true,
+    fav: true, nightsEmpty: false, cat: 'Rain', plan: 'Yearly',
+    notifOn: { 'Bedtime invitation': true, 'New worlds weekly': false, 'Session finished': false, 'Quiet hours': true }
+  };
+  timers = [];
+  componentDidMount() { this.t(() => this.setState({ screen: 'onboarding' }), 3000); }
+  componentWillUnmount() { this.clear(); }
+  t(fn, ms) { const id = setTimeout(fn, ms); this.timers.push(id); return id; }
+  clear() { this.timers.forEach(clearTimeout); this.timers = []; if (this.gi) { clearInterval(this.gi); this.gi = null; } }
+  go(s) {
+    this.clear();
+    this.setState({ screen: s, sheet: false, talk: false, ui: true, gen: 0, ready: false });
+    if (s === 'generating') {
+      this.gi = setInterval(() => this.setState(st => {
+        const g = st.gen + 1;
+        if (g >= 4) { clearInterval(this.gi); this.gi = null; return { gen: 4, ready: true }; }
+        return { gen: g };
+      }), 1200);
+    }
+    if (s === 'session') this.t(() => this.setState({ ui: false }), 5000);
+    if (s === 'fade') this.t(() => this.go('complete'), 5200);
+  }
+  pick(key, val) { this.setState({ [key]: val }); }
+  chipBtn(label, active, onClick) {
+    return { label, onClick, style: 'padding:10px 15px;border-radius:999px;cursor:pointer;font:300 12.5px Poppins,sans-serif;transition:background .4s ease,color .4s ease;white-space:nowrap;' +
+      (active ? 'background:rgba(169,176,255,.18);border:1px solid rgba(169,176,255,.5);color:#F2F3FF'
+              : 'background:rgba(234,236,247,.04);border:1px solid rgba(234,236,247,.09);color:rgba(234,236,247,.55)') };
+  }
+  group(label, key, options) {
+    return { label, options: options.map(o => this.chipBtn(o, this.state[key] === o, () => this.pick(key, o))) };
+  }
+  renderVals() {
+    const s = this.state, scr = s.screen;
+    const navScreens = ['home', 'explore', 'create', 'nights', 'profile', 'companion', 'privacy', 'premium', 'notif', 'detail'];
+    const railItems = [
+      ['splash', 'Splash'], ['onboarding', 'Onboarding'], ['home', 'Home'], ['create', 'Create Dream'],
+      ['generating', 'AI Generation'], ['session', 'Immersive Session'], ['fade', 'Sleep Fade'], ['complete', 'Session Complete'],
+      ['explore', 'Explore'], ['nights', 'My Nights'], ['detail', 'Dream Detail'], ['companion', 'AI Companion'],
+      ['profile', 'Profile'], ['privacy', 'Privacy'], ['premium', 'Premium'], ['notif', 'Notifications'], ['error', 'Error State']
+    ];
+    const ob = [
+      { title: 'Where do you want your mind to go tonight?', body: 'Not a playlist. Not a course. A place you describe, narrated only for you.', cta: 'Continue', art: 'linear-gradient(170deg,#25315A,#0F1530)' },
+      { title: "Describe a world.\nWe'll bring it to life.", body: 'A sentence is enough. The more you give, the further we can take you.', quote: 'A quiet beach at midnight.\nRain is falling.\nThere\u2019s a small fire beside me.\nSomeone is telling me stories about humanity.', cta: 'Continue', art: 'linear-gradient(170deg,#1D2C4E,#0C1226)' },
+      { title: 'Listen. Imagine. Let go.', body: 'The AI writes and speaks your night in real time, adapting its pace to the hour and to you.', cta: 'Continue', art: 'linear-gradient(170deg,#2A2544,#0E1024)' },
+      { title: 'Your voice. Your pace. Your world.', body: 'Choose who speaks, how slowly, and what sound sits underneath. Or change nothing — the defaults are made for sleep.', cta: 'Continue', art: 'linear-gradient(170deg,#1B3048,#0A121F)' },
+      { title: 'Ready for tonight?', body: 'It takes about twenty seconds from here to the inside of your imagination.', cta: 'Enter My Dream', art: 'linear-gradient(170deg,#2E2A4E,#0B0E1A)' }
+    ][s.ob];
+    const genPhrases = ['Creating your world…', 'Setting the atmosphere…', 'Finding the right rhythm…', 'Preparing your voice…', 'Your world is ready.'];
+    const starPos = [[8,14],[22,9],[35,22],[48,7],[61,18],[74,11],[87,25],[15,31],[42,35],[68,33],[91,8],[29,17],[55,28],[80,19]];
+    const exampleText = "I'm sitting beside a small fire on a quiet beach.\nIt's raining softly.\nThe ocean is dark and calm.\nTell me something meaningful about humanity.";
+    const favData = [
+      ['Rainy Beach', '32 min · Rain + Ocean', 'linear-gradient(165deg,#22344F,#0C1526)'],
+      ['Cabin in the Snow', '45 min · Fireplace', 'linear-gradient(165deg,#2C2E46,#101222)'],
+      ['Midnight Tokyo', '20 min · City rain', 'linear-gradient(165deg,#332845,#130F22)']
+    ];
+    const nightData = [
+      ['Rain on the Coast', 'September 21 · 32 min · Warm voice', 'Rain + Ocean', 'linear-gradient(160deg,#22344F,#0C1526)'],
+      ['Conversation About Humanity', 'September 19 · 48 min · Deep voice', 'Fireplace', 'linear-gradient(160deg,#3A2E3F,#15101C)'],
+      ['Silent Forest Walk', 'September 17 · 26 min · Whisper', 'Forest + Wind', 'linear-gradient(160deg,#1F3A33,#0A1714)'],
+      ['Under the Northern Lights', 'September 14 · 60 min · Neutral', 'Wind', 'linear-gradient(160deg,#1C3550,#0A1420)']
+    ];
+    const exploreData = [
+      ['Rain on a Window', 'A slow evening indoors while the city blurs outside.', '25 min · Rain', 'linear-gradient(90deg,#0B1020,#24344E)'],
+      ['Campfire at the Edge of the Ocean', 'Salt, smoke, and a voice that never hurries.', '40 min · Fire + Ocean', 'linear-gradient(90deg,#120E18,#4A3324)'],
+      ['Midnight in Kyoto', 'Wet stone streets, paper lanterns, no one else awake.', '30 min · City', 'linear-gradient(90deg,#0E1020,#33284A)'],
+      ['Conversation About Humanity', 'A philosophical night told as if by an old friend.', '60 min · Fireplace', 'linear-gradient(90deg,#0C121C,#1F3A46)']
+    ];
+    return {
+      rail: railItems.map(([id, label]) => ({ label, onClick: () => this.go(id),
+        style: 'text-align:left;border:none;background:' + (scr === id ? 'rgba(139,147,255,.16)' : 'transparent') +
+          ';color:' + (scr === id ? '#F2F3FF' : 'rgba(234,236,247,.45)') +
+          ';padding:8px 11px;border-radius:9px;font:300 12.5px Poppins,sans-serif;cursor:pointer;transition:background .4s ease,color .4s ease' })),
+      stars: starPos.map(([x, y], i) => ({ style: 'position:absolute;left:' + x + '%;top:' + y + '%;width:2px;height:2px;border-radius:50%;background:#EAECF7;animation:twinkle ' + (5 + (i % 5)) + 's ease-in-out ' + (i * 0.4) + 's infinite' })),
+      isSplash: scr === 'splash', isOnboarding: scr === 'onboarding', isHome: scr === 'home', isCreate: scr === 'create',
+      isGen: scr === 'generating', isSession: scr === 'session', isFade: scr === 'fade', isComplete: scr === 'complete',
+      isExplore: scr === 'explore', isNights: scr === 'nights', isDetail: scr === 'detail', isCompanion: scr === 'companion',
+      isProfile: scr === 'profile', isPrivacy: scr === 'privacy', isPremium: scr === 'premium', isNotif: scr === 'notif', isError: scr === 'error',
+      screenLabel: (railItems.find(r => r[0] === scr) || ['', ''])[1],
+      showNav: navScreens.indexOf(scr) >= 0 && !s.sheet,
+      nav: [['home', 'Home'], ['explore', 'Explore'], ['create', 'Create'], ['nights', 'Sessions'], ['profile', 'Profile']].map(([id, label]) => {
+        const active = scr === id || (id === 'nights' && scr === 'detail') || (id === 'profile' && ['privacy', 'premium', 'notif', 'companion'].indexOf(scr) >= 0);
+        const isCreate = id === 'create';
+        return { label, onClick: () => this.go(id),
+          wrapStyle: 'flex:1;display:flex;flex-direction:column;align-items:center;gap:' + (isCreate ? 7 : 8) + 'px;border:none;background:none;padding:6px 0;cursor:pointer',
+          dotStyle: isCreate
+            ? 'width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#EEEDFF,#9EA2F0 50%,#6E76D8 85%);box-shadow:0 0 24px 6px rgba(139,147,255,' + (active ? .5 : .32) + ');transition:box-shadow .6s ease'
+            : 'width:7px;height:7px;border-radius:50%;transition:background .5s ease,transform .5s ease;transform:scale(' + (active ? 1.25 : 1) + ');background:' + (active ? 'rgba(234,236,247,.9)' : 'rgba(234,236,247,.28)'),
+          labelStyle: 'font:300 10.5px Poppins,sans-serif;letter-spacing:.06em;transition:color .5s ease;color:' + (active ? 'rgba(242,243,255,.9)' : 'rgba(234,236,247,.35)') };
+      }),
+      skipSplash: () => this.go('onboarding'),
+      obDots: [0, 1, 2, 3, 4].map(i => ({ style: 'width:' + (i === s.ob ? 22 : 6) + 'px;height:3px;border-radius:2px;transition:width .6s ease,background .6s ease;background:' + (i === s.ob ? 'rgba(234,236,247,.75)' : 'rgba(234,236,247,.18)') })),
+      ob, obNext: () => { if (s.ob >= 4) this.go('home'); else this.setState({ ob: s.ob + 1 }); },
+      goHome: () => this.go('home'), goCreate: () => this.go('create'), goNights: () => this.go('nights'),
+      goProfile: () => this.go('profile'), goComplete: () => this.go('complete'), goSleepFade: () => this.go('fade'),
+      beginTonight: () => this.go('generating'), startGen: () => this.go('generating'), enterSession: () => this.go('session'),
+      homeExamples: ['Rainy beach…', 'Cabin in the mountains…', 'Walking through Tokyo at night…', 'A campfire under the stars…'],
+      favorites: favData.map(([title, meta, bg]) => ({ title, meta, onClick: () => this.go('detail'),
+        style: 'position:relative;flex:none;width:158px;height:196px;border-radius:22px;overflow:hidden;background:' + bg + ';cursor:pointer;transition:transform .6s ease' })),
+      prompt: s.prompt, onPrompt: e => this.setState({ prompt: e.target.value }),
+      fillExample: () => this.setState({ prompt: exampleText }),
+      chipList: ['Ocean', 'Rain', 'Campfire', 'Forest', 'Mountains', 'Space', 'Night City', 'Cabin', 'Fantasy']
+        .map(c => this.chipBtn(c, s.chips.indexOf(c) >= 0, () => this.setState(st => ({ chips: st.chips.indexOf(c) >= 0 ? st.chips.filter(x => x !== c) : st.chips.concat([c]) })))),
+      settingsSummary: s.voice + ' voice · ' + s.mood + ' · ' + s.amb + ' · ' + s.dur,
+      openSheet: () => this.setState({ sheet: true }), closeSheet: () => this.setState({ sheet: false }), sheetOpen: s.sheet,
+      sheetGroups: [
+        this.group('Voice', 'voice', ['Female', 'Male', 'Neutral', 'Warm', 'Deep', 'Whisper-like']),
+        this.group('Voice mood', 'mood', ['Calm', 'Warm', 'Philosophical', 'Dreamy', 'Mysterious', 'Comforting']),
+        this.group('Ambience', 'amb', ['Rain', 'Ocean', 'Fireplace', 'Wind', 'Forest', 'Night', 'Café', 'None']),
+        this.group('Duration', 'dur', ['10 min', '20 min', '30 min', '45 min', '60 min', 'Until sleep'])
+      ],
+      genPhrase: genPhrases[s.gen], genReady: s.ready,
+      genBarStyle: 'position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:rgba(169,176,255,.7);transition:width 1.1s ease;width:' + (s.gen * 25) + '%',
+      wakeUI: () => { if (!s.ui) { this.setState({ ui: true }); this.t(() => this.setState({ ui: false }), 5000); } },
+      sessionUiStyle: 'position:absolute;inset:0;transition:opacity 2.4s ease;opacity:' + (s.ui ? 1 : 0) + ';pointer-events:' + (s.ui ? 'auto' : 'none'),
+      orbStyle: 'width:' + (s.playing ? 112 : 88) + 'px;height:' + (s.playing ? 112 : 88) + 'px;border-radius:50%;transition:width 2s ease,height 2s ease;background:radial-gradient(circle at 36% 30%,#EEEDFF,#A3A7F2 45%,#5F63B8 82%);box-shadow:0 0 80px 16px rgba(139,147,255,.3);animation:breathe ' + (s.playing ? 7 : 11) + 's ease-in-out infinite',
+      sessionState: s.playing ? 'Speaking' : 'Paused',
+      playLabel: s.playing ? 'Pause' : 'Play',
+      togglePlay: () => this.setState({ playing: !s.playing }),
+      narration: 'Somewhere beyond the horizon, thousands of people are falling asleep just like you…',
+      talking: s.talk, toggleTalk: () => this.setState({ talk: !s.talk, ui: true }),
+      voiceBars: [18, 34, 50, 28, 44, 22, 14].map((h, i) => ({ style: 'width:5px;height:' + h + 'px;border-radius:3px;background:rgba(169,176,255,.6);animation:breathe ' + (2 + i * 0.3) + 's ease-in-out infinite' })),
+      summaryStats: [{ value: '32m', label: 'Time in the dream' }, { value: '11m', label: 'Awake before sleep' }, { value: 'Rain', label: 'Ambience' }],
+      savedPrompt: exampleText,
+      categories: ['Ocean', 'Rain', 'Campfire', 'Forest', 'Mountains', 'Space', 'Cities', 'Meditation', 'Philosophy', 'Love', 'Sleep']
+        .map(c => this.chipBtn(c, s.cat === c, () => this.pick('cat', c))),
+      exploreCards: exploreData.map(([title, desc, meta, bg]) => ({ title, desc, meta, onClick: () => this.go('detail'),
+        style: 'position:relative;height:132px;border-radius:22px;overflow:hidden;cursor:pointer;background:' + bg + ';transition:transform .6s ease' })),
+      nightsEmpty: s.nightsEmpty, nightsFilled: !s.nightsEmpty,
+      emptyToggleLabel: s.nightsEmpty ? 'show filled state' : 'show empty state',
+      toggleEmpty: () => this.setState({ nightsEmpty: !s.nightsEmpty }),
+      nights: nightData.map(([title, meta, ambient, bg]) => ({ title, meta, ambient, onClick: () => this.go('detail'),
+        style: '', thumb: 'width:64px;height:64px;border-radius:16px;flex:none;background:' + bg })),
+      detail: { title: 'Rain on the Coast', meta: 'September 21 · 32 min · Warm voice · Rain + Ocean',
+        desc: 'You returned to this one three times. It begins at the waterline, moves to the fire, and ends with the tide going out.',
+        prompt: exampleText, tags: ['Rain', 'Ocean', 'Campfire', 'Philosophy'] },
+      favIcon: s.fav ? '♥' : '♡', toggleFav: () => this.setState({ fav: !s.fav }),
+      companionGroups: [
+        this.group('Personality', 'mood', ['Gentle', 'Wise', 'Warm', 'Philosophical', 'Quiet', 'Storyteller']),
+        this.group('Narration style', 'style', ['Story', 'Meditation', 'Philosophy', 'Poetry', 'Conversation', 'Guided visualization']),
+        this.group('Speed', 'speed', ['Very slow', 'Slow', 'Normal']),
+        this.group('Voice intensity', 'intensity', ['Whisper', 'Soft', 'Normal'])
+      ],
+      profileStats: [{ value: '43', label: 'Dreams explored' }, { value: '21h', label: 'Minutes relaxed' }, { value: '6', label: 'Favourite worlds' }],
+      settingsRows: [
+        { label: 'AI Companion', value: 'Selen', onClick: () => this.go('companion') },
+        { label: 'Voice', value: s.voice, onClick: () => this.setState({ screen: 'companion' }) },
+        { label: 'Sleep preferences', value: s.dur, onClick: () => this.go('companion') },
+        { label: 'Ambient sounds', value: s.amb, onClick: () => this.go('companion') },
+        { label: 'Notifications', value: '', onClick: () => this.go('notif') },
+        { label: 'Language', value: 'English', onClick: () => {} },
+        { label: 'Privacy', value: '', onClick: () => this.go('privacy') },
+        { label: 'Subscription', value: 'Premium', onClick: () => this.go('premium') }
+      ],
+      privacyRows: [
+        { title: 'Your prompts stay on your device', body: 'What you type is sent once to generate the night, then kept locally unless you save it to My Nights.' },
+        { title: 'Voice is never stored', body: 'When you talk to your companion, audio is transcribed in the moment and discarded. Nothing is kept afterwards.' },
+        { title: 'Nothing is used for training', body: 'Your dreams are not used to train models and are never shared with third parties.' },
+        { title: 'Leave whenever you want', body: 'Delete every session, prompt and preference in one tap. Export a copy first if you want to keep it.' }
+      ],
+      premiumFeatures: ['Unlimited AI nights, any length', 'Premium voices and whisper narration', 'Voice conversations inside the dream', 'Adaptive storytelling that remembers your worlds', 'Sleep routines and a personal dream library'],
+      plans: [
+        { name: 'Monthly', price: '€9.99', note: 'billed monthly', onClick: () => this.pick('plan', 'Monthly'),
+          style: 'flex:1;padding:18px;border-radius:20px;cursor:pointer;transition:background .5s ease;' + (s.plan === 'Monthly' ? 'background:rgba(169,176,255,.14);border:1px solid rgba(169,176,255,.5)' : 'background:rgba(234,236,247,.04);border:1px solid rgba(234,236,247,.08)') },
+        { name: 'Yearly', price: '€59', note: '2 months quiet, free', onClick: () => this.pick('plan', 'Yearly'),
+          style: 'flex:1;padding:18px;border-radius:20px;cursor:pointer;transition:background .5s ease;' + (s.plan === 'Yearly' ? 'background:rgba(169,176,255,.14);border:1px solid rgba(169,176,255,.5)' : 'background:rgba(234,236,247,.04);border:1px solid rgba(234,236,247,.08)') }
+      ],
+      notifs: ['Your night is waiting.', 'Tonight, imagine somewhere peaceful.', 'Your favourite rainy beach is waiting.'],
+      notifToggles: ['Bedtime invitation', 'New worlds weekly', 'Session finished', 'Quiet hours'].map(label => {
+        const on = !!s.notifOn[label];
+        return { label, onClick: () => this.setState(st => ({ notifOn: Object.assign({}, st.notifOn, { [label]: !st.notifOn[label] }) })),
+          trackStyle: 'width:44px;height:26px;border-radius:13px;padding:3px;transition:background .5s ease;background:' + (on ? 'rgba(169,176,255,.55)' : 'rgba(234,236,247,.12)'),
+          knobStyle: 'width:20px;height:20px;border-radius:50%;background:#F2F3FF;transition:transform .5s cubic-bezier(.2,.8,.2,1);transform:translateX(' + (on ? 18 : 0) + 'px)' };
+      }),
+      notes: [
+        { title: 'Two type voices', body: 'Poppins Light carries the interface; Cormorant Garamond carries anything the AI would say out loud. Emotional lines are always the serif.' },
+        { title: 'One accent, one warmth', body: 'Indigo #8B93FF for the AI presence, amber for firelight. Nothing else is coloured — atmosphere comes from gradient depth, not hue count.' },
+        { title: 'Disappearing interface', body: 'Nav exists on five screens only. From generation onward the app removes itself: controls fade at 5s, a tap brings them back for 5 more.' },
+        { title: 'No form filling', body: 'Create is one text field and a CTA. Voice, mood, ambience and duration live in an optional sheet with sleep-safe defaults already chosen.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
