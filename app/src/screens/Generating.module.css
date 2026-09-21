@@ -1,0 +1,81 @@
+.generating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 52px;
+  animation: fadeIn 1.2s ease both;
+}
+
+.orbStack {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.halo {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 147, 255, 0.28), transparent 68%);
+  animation: breatheSlow 7s ease-in-out infinite;
+}
+
+.ring {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 1px solid rgba(169, 176, 255, 0.18);
+  animation: ripple 6s ease-out infinite;
+}
+
+.core {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #e7e6ff, #9ea2f0 45%, #5f63b8 80%);
+  box-shadow: 0 0 70px 14px rgba(139, 147, 255, 0.35);
+  animation: breathe 6s ease-in-out infinite;
+}
+
+.caption {
+  text-align: center;
+  padding: 0 40px;
+}
+
+.phrase {
+  font: 300 20px/1.5 var(--ui);
+  color: var(--ink-bright);
+  min-height: 30px;
+}
+
+/* A hairline, not a progress bar — the wait is meant to feel unmeasured. */
+.track {
+  width: 120px;
+  height: 1px;
+  background: rgba(234, 236, 247, 0.12);
+  margin: 24px auto 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  background: rgba(169, 176, 255, 0.7);
+  transition: width 1.1s ease;
+}
+
+.enter {
+  position: absolute;
+  bottom: 96px;
+  animation: rise 1.4s ease both;
+}

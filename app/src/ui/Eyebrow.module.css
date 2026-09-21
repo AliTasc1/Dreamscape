@@ -1,0 +1,6 @@
+.eyebrow {
+  font: 400 10px var(--ui);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-32);
+}

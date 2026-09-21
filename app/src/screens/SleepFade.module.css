@@ -1,0 +1,26 @@
+/* The last screen before sleep: one background, one dot, two words. */
+.fade {
+  background: var(--night-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 2.5s ease both;
+}
+
+.inner {
+  text-align: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(234, 236, 247, 0.45);
+  margin: 0 auto 26px;
+  animation: breathe 7s ease-in-out infinite;
+}
+
+.goodnight {
+  font: 300 italic 26px var(--voice);
+  color: rgba(234, 236, 247, 0.42);
+}

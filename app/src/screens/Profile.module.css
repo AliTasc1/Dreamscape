@@ -1,0 +1,82 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #3a4573, #1a2040);
+  border: 1px solid var(--line-hi);
+  flex: none;
+}
+
+.name {
+  font: 300 22px var(--voice);
+  color: var(--ink-bright);
+}
+
+.plan {
+  font: 300 11.5px var(--ui);
+  color: rgba(234, 236, 247, 0.38);
+  margin-top: 4px;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.stat {
+  flex: 1;
+  padding: 16px 14px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.statValue {
+  font: 300 22px var(--ui);
+  color: var(--ink-bright);
+}
+
+.statLabel {
+  font: 300 10.5px/1.4 var(--ui);
+  color: rgba(234, 236, 247, 0.38);
+  margin-top: 6px;
+}
+
+.rows {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 17px 16px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(234, 236, 247, 0.75);
+  font: 300 14px var(--ui);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.4s ease;
+}
+
+.row:hover {
+  background: rgba(234, 236, 247, 0.05);
+}
+
+.rowValue {
+  color: rgba(234, 236, 247, 0.3);
+  font-size: 12px;
+}

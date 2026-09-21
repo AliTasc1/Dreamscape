@@ -1,0 +1,14 @@
+/*
+ * The app fills the viewport on a phone. On anything wider it holds a single
+ * phone-width column, because none of this layout wants to be stretched.
+ */
+.device {
+  position: relative;
+  width: 100%;
+  max-width: var(--app-max-width);
+  height: 100%;
+  overflow: hidden;
+  background: var(--night);
+  color: var(--ink);
+  isolation: isolate;
+}

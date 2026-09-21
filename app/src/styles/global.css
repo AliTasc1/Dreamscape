@@ -1,0 +1,235 @@
+/*
+ * Dreamscape — foundations.
+ *
+ * Two type voices: Poppins Light carries the interface, Cormorant Garamond
+ * carries anything the AI would say out loud. One accent (indigo) and one
+ * warmth (amber); everything else is gradient depth, not hue.
+ */
+
+:root {
+  /* ink */
+  --ink: #eaecf7;
+  --ink-bright: #f2f3ff;
+  --ink-brightest: #f7f6ff;
+  --ink-70: rgba(234, 236, 247, 0.7);
+  --ink-55: rgba(234, 236, 247, 0.55);
+  --ink-45: rgba(234, 236, 247, 0.45);
+  --ink-40: rgba(234, 236, 247, 0.4);
+  --ink-35: rgba(234, 236, 247, 0.35);
+  --ink-32: rgba(234, 236, 247, 0.32);
+
+  /* night */
+  --night: #05070f;
+  --night-deep: #03050b;
+  --night-ink: #0b0e1a;
+
+  /* accents */
+  --indigo: #8b93ff;
+  --indigo-soft: #a9b0ff;
+  --amber: #f0a868;
+
+  /* surfaces */
+  --surface: rgba(234, 236, 247, 0.04);
+  --surface-hi: rgba(234, 236, 247, 0.08);
+  --surface-indigo: rgba(139, 147, 255, 0.07);
+  --line: rgba(234, 236, 247, 0.06);
+  --line-hi: rgba(234, 236, 247, 0.1);
+
+  /* type */
+  --ui: Poppins, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --voice: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
+  /* metrics — the prototype's 390x844 values, grown only for real safe areas */
+  --screen-pt: max(70px, calc(env(safe-area-inset-top, 0px) + 16px));
+  --screen-px: 22px;
+  --nav-h: 104px;
+  --nav-pb: max(22px, env(safe-area-inset-bottom, 0px));
+  --app-max-width: 430px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--ui);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  font-family: var(--ui);
+  color: inherit;
+}
+
+textarea {
+  font-family: var(--ui);
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+* {
+  scrollbar-width: none;
+}
+
+/* ---- motion ---- */
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.13);
+    opacity: 1;
+  }
+}
+
+@keyframes breatheSlow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.15;
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-60px, 18px, 0);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes rise {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes moonGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 60px 18px rgba(150, 160, 255, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 90px 34px rgba(150, 160, 255, 0.28);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+/*
+ * Decorative drift, twinkle, ripple and wave are removed when the viewer asks
+ * for less motion. The orb keeps breathing — it is the app's pulse, not
+ * decoration — but slowly and without the scale change.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-decor] {
+    animation: none !important;
+  }
+
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes breatheSlow {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+}

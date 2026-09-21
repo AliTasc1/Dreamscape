@@ -1,0 +1,54 @@
+.back {
+  font-size: 13px;
+  color: var(--ink-45);
+}
+
+.title {
+  font: 300 26px/1.35 var(--voice);
+  color: var(--ink-bright);
+  margin-top: 18px;
+  text-wrap: pretty;
+}
+
+.lede {
+  font: 300 13.5px/1.9 var(--ui);
+  color: rgba(234, 236, 247, 0.5);
+  margin-top: 14px;
+  text-wrap: pretty;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.row {
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.rowTitle {
+  font: 400 13.5px var(--ui);
+  color: rgba(234, 236, 247, 0.85);
+}
+
+.rowBody {
+  font: 300 12.5px/1.8 var(--ui);
+  color: var(--ink-45);
+  margin-top: 7px;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.action {
+  flex: 1;
+}

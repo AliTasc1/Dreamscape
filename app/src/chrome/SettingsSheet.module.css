@@ -1,0 +1,43 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 5, 11, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  animation: fadeIn 0.5s ease both;
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 78%;
+  overflow-y: auto;
+  border-radius: 30px 30px 0 0;
+  background: linear-gradient(180deg, #121732, #0a0d1c);
+  border-top: 1px solid var(--line-hi);
+  padding: 14px 22px calc(40px + env(safe-area-inset-bottom, 0px));
+  animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.grabber {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(234, 236, 247, 0.2);
+  margin: 0 auto 20px;
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.done {
+  margin-top: 26px;
+}

@@ -1,0 +1,195 @@
+/*
+ * The session is the one screen that actively removes itself: the controls
+ * fade out after five seconds, and a tap anywhere brings them back for five
+ * more. Everything below the orb is atmosphere.
+ */
+.session {
+  background: radial-gradient(90% 60% at 50% 18%, #101a38, #060a16 60%, #03050c);
+}
+
+.horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 240px;
+  background: linear-gradient(180deg, transparent, rgba(16, 26, 56, 0.8));
+  overflow: hidden;
+}
+
+.waves {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  width: 200%;
+  height: 120px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(120, 140, 220, 0.07) 0 60px,
+    transparent 60px 120px
+  );
+  filter: blur(6px);
+  animation: wave 28s linear infinite;
+}
+
+.fire {
+  position: absolute;
+  left: 50%;
+  bottom: 118px;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(240, 168, 104, 0.5), transparent 65%);
+  filter: blur(8px);
+  animation: flicker 4.5s ease-in-out infinite;
+}
+
+.orbStack {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 240px;
+  height: 240px;
+}
+
+.orbRing {
+  position: absolute;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  border: 1px solid rgba(169, 176, 255, 0.12);
+  animation: ripple 8s ease-out infinite;
+}
+
+/* Larger and quicker while speaking, smaller and slower when paused. */
+.orb {
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #eeedff, #a3a7f2 45%, #5f63b8 82%);
+  box-shadow: 0 0 80px 16px rgba(139, 147, 255, 0.3);
+  transition:
+    width 2s ease,
+    height 2s ease;
+}
+
+.ui {
+  position: absolute;
+  inset: 0;
+  transition: opacity 2.4s ease;
+}
+
+.uiDim {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.topBar {
+  position: absolute;
+  top: calc(var(--screen-pt) - 8px);
+  left: 22px;
+  right: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pill {
+  padding: 9px 16px;
+  font-size: 12px;
+}
+
+.state {
+  font: 300 11px var(--ui);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-40);
+}
+
+.narration {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 56%;
+  text-align: center;
+  font: 300 italic 20px/1.9 var(--voice);
+  color: rgba(234, 236, 247, 0.72);
+  text-wrap: pretty;
+}
+
+.controls {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: calc(44px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mixRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mixLabel {
+  font: 300 10px var(--ui);
+  color: var(--ink-35);
+  width: 34px;
+}
+
+.mixTrack {
+  flex: 1;
+  height: 2px;
+  background: rgba(234, 236, 247, 0.12);
+  border-radius: 2px;
+  position: relative;
+}
+
+.mixFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 62%;
+  background: rgba(169, 176, 255, 0.6);
+  border-radius: 2px;
+}
+
+.mixKnob {
+  position: absolute;
+  left: 62%;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.round {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 11px;
+}
+
+.play {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+  box-shadow: 0 0 40px rgba(234, 236, 247, 0.18);
+}

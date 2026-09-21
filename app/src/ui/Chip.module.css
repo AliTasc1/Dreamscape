@@ -1,0 +1,54 @@
+.chip {
+  padding: 10px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  font: 300 12.5px var(--ui);
+  white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid rgba(234, 236, 247, 0.09);
+  color: var(--ink-55);
+  transition:
+    background 0.4s ease,
+    border-color 0.4s ease,
+    color 0.4s ease;
+}
+
+.chip:hover {
+  background: rgba(234, 236, 247, 0.07);
+  color: var(--ink-70);
+}
+
+.active,
+.active:hover {
+  background: rgba(169, 176, 255, 0.18);
+  border-color: rgba(169, 176, 255, 0.5);
+  color: var(--ink-bright);
+}
+
+/* Read-only chips: the example prompts on Home, the tags on Dream Detail. */
+.static {
+  padding: 8px 13px;
+  cursor: default;
+  background: rgba(234, 236, 247, 0.05);
+  border-color: rgba(234, 236, 247, 0.07);
+  font-size: 12px;
+}
+
+.static:hover {
+  background: rgba(234, 236, 247, 0.05);
+  color: var(--ink-55);
+}
+
+/* Dream Detail's tags sit one pixel wider than Home's example prompts. */
+.wide {
+  padding-left: 14px;
+  padding-right: 14px;
+  border-color: rgba(234, 236, 247, 0.08);
+}
+
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}

@@ -1,0 +1,35 @@
+.splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  animation: fadeIn 1.4s ease both;
+  cursor: pointer;
+}
+
+.moon {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, #f2f0ff, #c6c9f2 45%, #8e93c8 78%, #585c86);
+  animation: moonGlow 7s ease-in-out infinite;
+}
+
+.words {
+  text-align: center;
+  animation: rise 2s ease 0.5s both;
+}
+
+.wordmark {
+  font: 300 30px/1 var(--ui);
+  letter-spacing: 0.42em;
+  padding-left: 0.42em;
+  color: var(--ink-bright);
+}
+
+.tagline {
+  font: 300 italic 17px/1.6 var(--voice);
+  color: rgba(234, 236, 247, 0.6);
+  margin-top: 16px;
+}

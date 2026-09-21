@@ -1,0 +1,15 @@
+.screen {
+  position: absolute;
+  inset: 0;
+}
+
+/* The standard list screen: clear of the status bar, clear of the nav. */
+.scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--screen-pt) var(--screen-px) var(--screen-pb, 130px);
+}
+
+.fade {
+  animation: fadeIn 1.4s ease both;
+}

@@ -1,0 +1,116 @@
+.scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hero {
+  position: relative;
+  height: 330px;
+  background: linear-gradient(170deg, #23304f, #0e1428 60%);
+  overflow: hidden;
+}
+
+.heroGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 45% at 65% 25%, rgba(150, 170, 255, 0.25), transparent 70%),
+    radial-gradient(45% 35% at 25% 85%, rgba(240, 168, 104, 0.18), transparent 70%);
+}
+
+.heroScrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 140px;
+  background: linear-gradient(180deg, transparent, #05070f);
+}
+
+.heroButton {
+  position: absolute;
+  top: calc(var(--screen-pt) - 10px);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(5, 7, 15, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.4s ease;
+}
+
+.heroButton:hover {
+  background: rgba(5, 7, 15, 0.6);
+}
+
+.back {
+  left: 20px;
+  color: var(--ink);
+  font: 300 16px var(--ui);
+}
+
+.fav {
+  right: 20px;
+  color: var(--amber);
+  font: 300 14px var(--ui);
+}
+
+/* The title climbs over the artwork's lower edge. */
+.body {
+  padding: 0 24px 140px;
+  margin-top: -40px;
+  position: relative;
+}
+
+.title {
+  font: 300 30px/1.25 var(--voice);
+  color: var(--ink-brightest);
+}
+
+.meta {
+  font: 300 12px var(--ui);
+  color: var(--ink-40);
+  margin-top: 10px;
+}
+
+.desc {
+  font: 300 14px/1.9 var(--ui);
+  color: rgba(234, 236, 247, 0.6);
+  margin-top: 22px;
+  text-wrap: pretty;
+}
+
+.prompt {
+  margin-top: 24px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(139, 147, 255, 0.06);
+  border: 1px solid rgba(234, 236, 247, 0.07);
+  font: 300 italic 14.5px/1.9 var(--voice);
+  color: var(--ink-55);
+  white-space: pre-line;
+}
+
+.tags {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+/* Pinned to the device, not to the scrolling content. */
+.cta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px 24px calc(34px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, transparent, rgba(5, 7, 15, 0.95) 40%);
+}

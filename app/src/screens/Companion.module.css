@@ -1,0 +1,33 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* The companion has no face — only a presence that breathes. */
+.orb {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #e7e6ff, #9ea2f0 45%, #5f63b8 80%);
+  box-shadow: 0 0 56px 10px rgba(139, 147, 255, 0.28);
+  animation: breathe 7s ease-in-out infinite;
+}
+
+.name {
+  font: 300 24px var(--voice);
+  color: var(--ink-bright);
+}
+
+.tenure {
+  font: 300 12.5px var(--ui);
+  color: var(--ink-40);
+}
+
+.groups {
+  margin-top: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}

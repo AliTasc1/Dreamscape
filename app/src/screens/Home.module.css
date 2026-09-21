@@ -1,0 +1,183 @@
+.greeting {
+  font: 300 13px/1 var(--ui);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-35);
+}
+
+.question {
+  font: 300 27px/1.4 var(--voice);
+  color: var(--ink-bright);
+  margin-top: 14px;
+  text-wrap: pretty;
+}
+
+/* Tonight's dream — the one card that is already decided for you. */
+.hero {
+  margin-top: 26px;
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  height: 280px;
+  background: linear-gradient(170deg, #1c2a4a, #0e1428 55%, #0a0d1c);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.heroGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 50% at 70% 18%, rgba(150, 170, 255, 0.22), transparent 65%),
+    radial-gradient(50% 40% at 20% 85%, rgba(240, 168, 104, 0.14), transparent 70%);
+}
+
+.heroMist {
+  position: absolute;
+  left: -20%;
+  bottom: -40px;
+  width: 140%;
+  height: 160px;
+  background: radial-gradient(60% 100% at 50% 100%, rgba(30, 45, 90, 0.9), transparent 70%);
+  animation: drift 38s ease-in-out infinite alternate;
+}
+
+.heroBody {
+  position: absolute;
+  inset: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(234, 236, 247, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font: 400 10px var(--ui);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(234, 236, 247, 0.72);
+}
+
+.heroTitle {
+  font: 300 30px/1.2 var(--voice);
+  color: var(--ink-brightest);
+}
+
+.heroDesc {
+  font: 300 13.5px/1.7 var(--ui);
+  color: var(--ink-55);
+  margin-top: 8px;
+  max-width: 270px;
+  text-wrap: pretty;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.heroMeta {
+  font: 300 12px var(--ui);
+  color: var(--ink-40);
+}
+
+.section {
+  margin-top: 30px;
+}
+
+/* The prompt field, still asleep. Tapping anywhere here opens Create. */
+.composer {
+  margin-top: 12px;
+  border-radius: 24px;
+  padding: 22px;
+  background: var(--surface-indigo);
+  border: 1px solid rgba(234, 236, 247, 0.08);
+  cursor: pointer;
+  transition:
+    background 0.6s ease,
+    transform 0.6s ease;
+  width: 100%;
+  text-align: left;
+  display: block;
+}
+
+.composer:hover {
+  background: rgba(139, 147, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.composerPlaceholder {
+  font: 300 15px/1.6 var(--ui);
+  color: var(--ink-45);
+}
+
+.composerChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.sectionRow {
+  margin-top: 30px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.rail {
+  margin-top: 12px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.card {
+  position: relative;
+  flex: none;
+  width: 158px;
+  height: 196px;
+  border-radius: 22px;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: transform 0.6s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.cardScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 35%, rgba(5, 7, 15, 0.88));
+}
+
+.cardText {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  text-align: left;
+}
+
+.cardTitle {
+  font: 400 14px/1.3 var(--ui);
+  color: var(--ink-bright);
+}
+
+.cardMeta {
+  font: 300 11px var(--ui);
+  color: var(--ink-45);
+  margin-top: 4px;
+}

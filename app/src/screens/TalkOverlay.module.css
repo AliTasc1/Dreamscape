@@ -1,0 +1,41 @@
+/* The dream steps back and listens. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 7, 15, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  animation: fadeIn 0.8s ease both;
+  padding: 0 24px;
+}
+
+.prompt {
+  font: 300 italic 22px/1.6 var(--voice);
+  color: rgba(234, 236, 247, 0.8);
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  height: 52px;
+}
+
+.bar {
+  width: 5px;
+  border-radius: 3px;
+  background: rgba(169, 176, 255, 0.6);
+}
+
+.transcript {
+  font: 300 13.5px/1.9 var(--ui);
+  color: var(--ink-45);
+  max-width: 250px;
+  text-align: center;
+  text-wrap: pretty;
+}

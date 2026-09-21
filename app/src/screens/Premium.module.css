@@ -1,0 +1,122 @@
+.premium {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Only grows on devices with a real top inset; 0 in a browser. */
+  padding: calc(var(--screen-pt) - 70px) 0 130px;
+  background: radial-gradient(90% 50% at 50% 0%, #23204a, #0a0d1c 60%, #05070f);
+}
+
+.hero {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+}
+
+.moon {
+  position: absolute;
+  left: 50%;
+  top: 70px;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #f6f1ff, #c3a9e8 45%, #7a6aa8 80%);
+  animation: moonGlow 8s ease-in-out infinite;
+}
+
+.heroScrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  background: linear-gradient(180deg, transparent, #0a0d1c);
+}
+
+.body {
+  padding: 0 26px;
+}
+
+.title {
+  font: 300 30px/1.3 var(--voice);
+  color: var(--ink-brightest);
+  text-align: center;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.feature {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+}
+
+.bullet {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(240, 168, 104, 0.8);
+  margin-top: 8px;
+  flex: none;
+}
+
+.featureText {
+  font: 300 14px/1.7 var(--ui);
+  color: rgba(234, 236, 247, 0.65);
+}
+
+.plans {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.plan {
+  flex: 1;
+  padding: 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid rgba(234, 236, 247, 0.08);
+  transition:
+    background 0.5s ease,
+    border-color 0.5s ease;
+}
+
+.planActive {
+  background: rgba(169, 176, 255, 0.14);
+  border-color: rgba(169, 176, 255, 0.5);
+}
+
+.planName {
+  font: 400 12.5px var(--ui);
+  color: var(--ink-70);
+}
+
+.planPrice {
+  font: 300 22px var(--ui);
+  color: var(--ink-bright);
+  margin-top: 8px;
+}
+
+.planNote {
+  font: 300 11px var(--ui);
+  color: rgba(234, 236, 247, 0.38);
+  margin-top: 6px;
+}
+
+.cta {
+  margin-top: 20px;
+}
+
+.fine {
+  text-align: center;
+  font: 300 11px var(--ui);
+  color: rgba(234, 236, 247, 0.3);
+  margin-top: 14px;
+}

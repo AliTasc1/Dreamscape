@@ -1,0 +1,113 @@
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  font: 300 26px var(--voice);
+  color: var(--ink-bright);
+}
+
+.stateToggle {
+  color: rgba(169, 176, 255, 0.6);
+  font-size: 11px;
+}
+
+/* Empty state — an invitation, not an apology. */
+.empty {
+  margin-top: 120px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.emptyRing {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 1px solid rgba(234, 236, 247, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyMoon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, #efeeff, #8e93c8);
+  opacity: 0.5;
+}
+
+.emptyLine {
+  font: 300 italic 20px var(--voice);
+  color: var(--ink-70);
+}
+
+.emptyCopy {
+  font: 300 13px/1.8 var(--ui);
+  color: rgba(234, 236, 247, 0.38);
+  max-width: 230px;
+  text-wrap: pretty;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.row {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.5s ease;
+}
+
+.row:hover {
+  background: var(--surface-hi);
+}
+
+.thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  flex: none;
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTitle {
+  font: 400 14.5px var(--ui);
+  color: var(--ink-bright);
+}
+
+.rowMeta {
+  font: 300 11.5px var(--ui);
+  color: var(--ink-40);
+  margin-top: 5px;
+}
+
+/* The ambience line is the one place amber shows up in a list. */
+.rowAmbient {
+  font: 300 11.5px var(--ui);
+  color: rgba(240, 168, 104, 0.6);
+  margin-top: 4px;
+}
+
+.chevron {
+  align-self: center;
+  color: rgba(234, 236, 247, 0.3);
+  font: 300 16px var(--ui);
+}

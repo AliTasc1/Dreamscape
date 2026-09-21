@@ -1,0 +1,31 @@
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 44px;
+  text-align: center;
+}
+
+.ring {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(234, 236, 247, 0.12);
+  animation: breathe 8s ease-in-out infinite;
+}
+
+.line {
+  font: 300 italic 24px/1.5 var(--voice);
+  color: rgba(234, 236, 247, 0.75);
+}
+
+.sub {
+  font: 300 13px/1.8 var(--ui);
+  color: var(--ink-40);
+}
+
+.action {
+  margin-top: 10px;
+}

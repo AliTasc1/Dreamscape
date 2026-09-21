@@ -1,0 +1,34 @@
+/* The sky sits behind every screen. Nothing in it is interactive. */
+
+.base {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 70% at 50% -8%, #1b2450 0%, #0a0e20 45%, #05070f 100%);
+}
+
+.field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* A slow band of cloud crossing the upper sky over three quarters of a minute. */
+.cloud {
+  position: absolute;
+  left: -10%;
+  top: 12%;
+  width: 120%;
+  height: 220px;
+  background: radial-gradient(60% 60% at 30% 50%, rgba(120, 132, 255, 0.1), transparent 70%);
+  filter: blur(14px);
+  animation: drift 46s linear infinite alternate;
+}
