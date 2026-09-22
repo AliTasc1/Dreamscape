@@ -161,6 +161,9 @@ export function useNightSession(): NightSession {
       },
     )
     narrator.current = instance
+    // The Enter tap that brought us here is still the active gesture, so the
+    // audio element can be permitted now and never asks again.
+    instance.unlock()
 
     const bed = new Ambience()
     bed.play(current.prefs.amb)
@@ -266,6 +269,9 @@ export function useNightSession(): NightSession {
     say,
     beginListening,
     endListening,
-    resumeAudio: useCallback(() => ambience.current?.resume(), []),
+    resumeAudio: useCallback(() => {
+      ambience.current?.resume()
+      narrator.current?.unlock()
+    }, []),
   }
 }

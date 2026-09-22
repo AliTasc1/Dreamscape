@@ -64,9 +64,22 @@ type Ended = () => void
  * One queue, one voice. Feed it paragraphs; it plays them in order and calls
  * back when the queue drains, so the session can ask for the next segment.
  */
+/** A silent frame, used only to satisfy autoplay during a real tap. */
+const SILENCE =
+  'data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tAFRZRVIAAAAGAAADMjAxMgBUREFUAAAABAAAADAwMDBUSU1FAAAABAAAADAwMDBQUklWAAAAJwAAA1hpbmcAAAAPAAAAAgAAAsAAgICAgICAgICAgICAgICAgICAgICAgIA='
+
 export class Narrator {
   private queue: string[] = []
+  /**
+   * One element for the whole session, reused for every paragraph.
+   *
+   * A fresh `new Audio()` per paragraph is the thing browsers block: only the
+   * first one inherits the tap that started the session, and every later one
+   * is refused until the listener taps again. One element, unlocked once,
+   * plays for the rest of the night untouched.
+   */
   private audio: HTMLAudioElement | null = null
+  private unlocked = false
   private objectUrl: string | null = null
   private speaking = false
   private stopped = false
@@ -87,6 +100,43 @@ export class Narrator {
   clearQueue(): void {
     this.queue = []
     this.silence()
+  }
+
+  /**
+   * Must be called from inside a real tap — the button that starts the night.
+   * Playing a silent frame then leaves the element permanently allowed.
+   */
+  unlock(): void {
+    if (this.unlocked) return
+    this.unlocked = true
+    const element = this.element()
+    element.src = SILENCE
+    void element
+      .play()
+      .then(() => {
+        element.pause()
+        element.currentTime = 0
+      })
+      .catch(() => undefined)
+    // Safari also gates synthesis on a gesture; an empty utterance opens it.
+    if (typeof speechSynthesis !== 'undefined') {
+      try {
+        speechSynthesis.speak(new SpeechSynthesisUtterance(''))
+      } catch {
+        // Not available; the audio path covers it.
+      }
+    }
+  }
+
+  private element(): HTMLAudioElement {
+    if (!this.audio) {
+      const element = new Audio()
+      element.preload = 'auto'
+      // Lets the night keep going with the screen off.
+      element.setAttribute('playsinline', '')
+      this.audio = element
+    }
+    return this.audio
   }
 
   setOptions(options: SpeakOptions): void {
@@ -141,10 +191,11 @@ export class Narrator {
     this.controller = null
     this.pending?.()
     this.pending = null
+    // The element is kept — it holds the autoplay permission for the session.
     if (this.audio) {
       this.audio.pause()
-      this.audio.src = ''
-      this.audio = null
+      this.audio.removeAttribute('src')
+      this.audio.load()
     }
     if (this.objectUrl) {
       URL.revokeObjectURL(this.objectUrl)
@@ -173,6 +224,28 @@ export class Narrator {
     if (!this.stopped) void this.pump()
   }
 
+  /**
+   * A paragraph can never hold the night open.
+   *
+   * Playback that neither ends nor errors — a blocked element, a synthesis
+   * engine that dies mid-sentence, a stream that stalls — would otherwise
+   * leave the queue waiting forever on an event that is not coming. After
+   * twice its expected length plus a margin, the night moves on regardless.
+   */
+  private guard<T>(work: Promise<T>, text: string): Promise<unknown> {
+    const limit = readingMs(text, this.options.speed) * 2 + 12_000
+    return Promise.race([
+      work,
+      new Promise((resolve) => {
+        const id = window.setTimeout(() => {
+          console.warn('[dreamscape] a paragraph never finished playing; continuing')
+          resolve(undefined)
+        }, limit)
+        void work.finally(() => window.clearTimeout(id))
+      }),
+    ])
+  }
+
   private async say(text: string): Promise<void> {
     const startedAt = Date.now()
 
@@ -192,8 +265,10 @@ export class Narrator {
       )
 
       if (this.stopped) return
-      if (blob) await this.playBlob(blob)
-      else await this.speakInBrowser(stripMarkers(text))
+      await this.guard(
+        blob ? this.playBlob(blob) : this.speakInBrowser(stripMarkers(text)),
+        text,
+      )
     }
 
     // Real audio usually outlasts the estimate and this waits for nothing.
@@ -214,19 +289,22 @@ export class Narrator {
 
   private playBlob(blob: Blob): Promise<void> {
     return new Promise((resolve) => {
+      const audio = this.element()
+      if (this.objectUrl) URL.revokeObjectURL(this.objectUrl)
       this.objectUrl = URL.createObjectURL(blob)
-      const audio = new Audio(this.objectUrl)
-      this.audio = audio
+
+      let settled = false
       const finish = () => {
-        if (this.objectUrl) {
-          URL.revokeObjectURL(this.objectUrl)
-          this.objectUrl = null
-        }
-        this.audio = null
+        if (settled) return
+        settled = true
+        audio.removeEventListener('ended', finish)
+        audio.removeEventListener('error', finish)
         resolve()
       }
       audio.addEventListener('ended', finish, { once: true })
       audio.addEventListener('error', finish, { once: true })
+
+      audio.src = this.objectUrl
       void audio.play().catch(finish)
     })
   }
@@ -235,6 +313,15 @@ export class Narrator {
     if (!browserSpeechAvailable() || !text) return Promise.resolve()
 
     return new Promise((resolve) => {
+      // Chrome stops synthesis part-way through anything long unless it is
+      // nudged; the nudge is harmless everywhere else.
+      const keepAlive = window.setInterval(() => {
+        if (speechSynthesis.speaking && !speechSynthesis.paused) {
+          speechSynthesis.pause()
+          speechSynthesis.resume()
+        }
+      }, 5000)
+
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = this.options.lang === 'tr' ? 'tr-TR' : 'en-US'
       utterance.rate = RATE[this.options.speed] ?? RATE.slow
@@ -243,7 +330,10 @@ export class Narrator {
       const voice = browserVoiceFor(this.options.lang)
       if (voice) utterance.voice = voice
 
-      const finish = () => resolve()
+      const finish = () => {
+        window.clearInterval(keepAlive)
+        resolve()
+      }
       utterance.addEventListener('end', finish, { once: true })
       utterance.addEventListener('error', finish, { once: true })
       speechSynthesis.speak(utterance)
