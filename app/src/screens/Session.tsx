@@ -1,12 +1,21 @@
-import { NARRATION } from '../data/content'
+import { useI18n } from '../i18n'
+import { useNightSession } from '../session/useNightSession'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
 import { Screen } from '../ui/Screen'
 import { TalkOverlay } from './TalkOverlay'
 import styles from './Session.module.css'
 
+function clock(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 export function Session() {
+  const { t, f } = useI18n()
   const app = useApp()
+  const night = useNightSession()
   const orbSize = app.playing ? 112 : 88
 
   return (
@@ -28,31 +37,42 @@ export function Session() {
         />
       </div>
 
+      {app.plan?.persona.who && <div className={styles.persona}>{app.plan.persona.who}</div>}
+
+      <div className={styles.narration} key={night.line}>
+        {night.line}
+      </div>
+
       <div className={`${styles.ui}${app.ui ? '' : ` ${styles.uiDim}`}`}>
         <div className={styles.topBar}>
           <Button
             variant="glassFlat"
             className={styles.pill}
-            onClick={() => app.go('complete')}
+            onClick={() => app.endNight('complete')}
           >
-            End
+            {t.session.end}
           </Button>
-          <div className={styles.state}>{app.playing ? 'Speaking' : 'Paused'}</div>
-          <Button
-            variant="glassFlat"
-            className={styles.pill}
-            onClick={() => app.go('fade')}
-          >
-            Sleep
+          <div>
+            <div className={styles.state}>
+              {night.buffering
+                ? t.session.listening
+                : app.playing
+                  ? t.session.speaking
+                  : t.session.paused}
+            </div>
+            <div className={styles.clock}>
+              {f(t.session.remaining, { time: clock(night.remaining) })}
+            </div>
+          </div>
+          <Button variant="glassFlat" className={styles.pill} onClick={() => app.endNight('fade')}>
+            {t.session.sleep}
           </Button>
         </div>
 
-        <div className={styles.narration}>{NARRATION}</div>
-
         <div className={styles.controls}>
-          {app.amb !== 'None' && (
+          {app.prefs.amb !== 'none' && (
             <div className={styles.mixRow}>
-              <div className={styles.mixLabel}>{app.amb}</div>
+              <div className={styles.mixLabel}>{t.options.amb[app.prefs.amb]}</div>
               <div className={styles.mixTrack}>
                 <div className={styles.mixFill} />
                 <div className={styles.mixKnob} />
@@ -61,7 +81,7 @@ export function Session() {
           )}
           <div className={styles.transport}>
             <Button variant="glass" className={styles.round} onClick={app.openTalk}>
-              Talk
+              {t.session.talk}
             </Button>
             <Button
               variant="solidSoft"
@@ -69,16 +89,47 @@ export function Session() {
               hoverScale={1.05}
               onClick={app.togglePlay}
             >
-              {app.playing ? 'Pause' : 'Play'}
+              {app.playing ? t.session.pause : t.session.play}
             </Button>
             <Button variant="glass" className={styles.round} onClick={app.openSheet}>
-              Mix
+              {t.session.mix}
             </Button>
           </div>
         </div>
       </div>
 
-      {app.talk && <TalkOverlay dismissLabel="Back to the dream" />}
+      {app.talk && <TalkOverlay dismissLabel={t.talk.backToDream} onSay={night.say} />}
+
+      {night.finished && (
+        <div className={styles.timeUp}>
+          <div className={styles.timeUpTitle}>
+            {app.premium ? t.fade.goodnight : t.session.timeUpFree}
+          </div>
+          {!app.premium && <div className={styles.timeUpBody}>{t.session.timeUpFreeBody}</div>}
+          <div className={styles.timeUpActions}>
+            <Button
+              variant="outline"
+              height={50}
+              paddingX={26}
+              fontSize={13}
+              onClick={() => app.endNight('complete')}
+            >
+              {t.complete.eyebrow}
+            </Button>
+            {!app.premium && (
+              <Button
+                variant="solid"
+                height={50}
+                paddingX={26}
+                fontSize={13}
+                onClick={() => app.go('premium')}
+              >
+                {t.session.seePremium}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </Screen>
   )
 }

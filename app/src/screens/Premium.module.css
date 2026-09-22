@@ -120,3 +120,9 @@
   color: rgba(234, 236, 247, 0.3);
   margin-top: 14px;
 }
+
+.manage {
+  margin-top: 18px;
+  height: 44px;
+  font-size: 12.5px;
+}

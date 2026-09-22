@@ -1,24 +1,23 @@
-import { PRIVACY_ROWS } from '../data/content'
+import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
 import { Screen } from '../ui/Screen'
 import styles from './Privacy.module.css'
 
 export function Privacy() {
-  const { go } = useApp()
+  const { t } = useI18n()
+  const app = useApp()
 
   return (
     <Screen scroll>
-      <Button variant="ghost" className={styles.back} onClick={() => go('profile')}>
-        &lsaquo; Profile
+      <Button variant="ghost" className={styles.back} onClick={() => app.go('profile')}>
+        &lsaquo; {t.nav.profile}
       </Button>
-      <div className={styles.title}>What you imagine stays yours.</div>
-      <div className={styles.lede}>
-        Your dreams can be personal. Here is exactly what happens to them.
-      </div>
+      <div className={styles.title}>{t.privacy.title}</div>
+      <div className={styles.lede}>{t.privacy.lede}</div>
 
       <div className={styles.rows}>
-        {PRIVACY_ROWS.map((row) => (
+        {t.privacy.rows.map((row) => (
           <div key={row.title} className={styles.row}>
             <div className={styles.rowTitle}>{row.title}</div>
             <div className={styles.rowBody}>{row.body}</div>
@@ -27,11 +26,23 @@ export function Privacy() {
       </div>
 
       <div className={styles.actions}>
-        <Button variant="outline" height={50} fontSize={13} className={styles.action}>
-          Export my data
+        <Button
+          variant="outline"
+          height={50}
+          fontSize={13}
+          className={styles.action}
+          onClick={app.exportData}
+        >
+          {t.privacy.exportData}
         </Button>
-        <Button variant="danger" height={50} fontSize={13} className={styles.action}>
-          Delete everything
+        <Button
+          variant="danger"
+          height={50}
+          fontSize={13}
+          className={styles.action}
+          onClick={app.deleteEverything}
+        >
+          {t.privacy.deleteAll}
         </Button>
       </div>
     </Screen>

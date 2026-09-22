@@ -1,7 +1,8 @@
 # Dreamscape
 
-A sleep and AI-dream-companion app, implemented from the Claude Design handoff in
-[`../project/Dreamscape.dc.html`](../project/Dreamscape.dc.html).
+Describe a world in a sentence and fall asleep inside it, narrated by a
+companion who becomes whoever you asked for. Implemented from the Claude Design
+handoff in [`../project/Dreamscape.dc.html`](../project/Dreamscape.dc.html).
 
 ```bash
 npm install
@@ -10,64 +11,98 @@ npm run build      # typecheck + production build
 npm run preview    # serve the production build
 ```
 
+The night is written and spoken by [`../server`](../server), which holds the API
+keys. Run it alongside (`cd ../server && npm start`) — dev proxies `/api` there.
+**Without it the app still runs end to end** on its own engine and the browser's
+speech synthesis, so nothing here needs a key to try.
+
 ## The idea the design is built around
 
-The phone gets darker, quieter and emptier the closer the user gets to sleep. The nav
-exists on the browsing screens only; from generation onward the app removes itself.
-Session controls fade after five seconds and a tap brings them back for five more. The
-sleep fade ends on a single word.
+The phone gets darker, quieter and emptier the closer you get to sleep. Nav
+exists on the browsing screens only; from generation onward the app removes
+itself. Session controls fade after five seconds and a tap brings them back for
+five more. The sleep fade ends on a single word.
 
-Two type voices carry that: **Poppins Light** for the interface, **Cormorant Garamond
-italic** for anything the AI would say out loud. One accent (indigo `#8B93FF`) and one
-warmth (amber `#F0A868`) — the rest of the atmosphere is gradient depth, not extra hue.
+Two type voices carry that: **Poppins Light** for the interface, **Cormorant
+Garamond italic** for anything the companion would say out loud. One accent
+(indigo `#8B93FF`) and one warmth (amber `#F0A868`).
+
+## What happens in a night
+
+1. **Language** is chosen right after the splash, and everything after it — UI,
+   narration and voice — is in that language. Turkish and English are complete;
+   `src/i18n/en.ts` is the shape every other locale is typed against, so a
+   missing key is a compile error, not a blank label.
+2. **Consent** sets how far the companion may go: gentle, romantic, or adult
+   behind an explicit 18+ confirmation. It travels with every request.
+3. **Create** takes a sentence and a length. Free nights run to 10 minutes;
+   premium to 60, and reaching past the limit opens the paywall rather than
+   failing.
+4. **Generating** reads the prompt: where you want to be, who you want the
+   companion to be, what you actually need. "Talk to me like my father so I am
+   not afraid" produces a father, not a narrator describing one.
+5. **Session** streams the narration a segment at a time, speaks it, and paces
+   it to real reading speed. Talk sends what you say back into the dream.
+6. **Complete** reflects on the night and files what it learned.
+
+## Memory
+
+`src/state/memory.ts` keeps a short, human-readable profile — themes, feelings,
+who you asked the companion to be, and a few quotable moments. It is built from
+your own words, it lives only in this browser, and every line has a *forget*
+beside it on the Memory screen. Create shows the most recent thing it remembers,
+so the companion calling back to last week is visible before you start.
 
 ## Layout
 
 ```
 src/
   App.tsx                 screen switch + persistent chrome
-  state/appState.tsx      the whole store: screen, preferences, timers
-  data/content.ts         every string, gradient and list in the app
-  types.ts
-  styles/global.css       tokens, reset, keyframes, reduced-motion
-  chrome/                 Sky, BottomNav, SettingsSheet
+  ai/                     contracts, service client, local engine, voice
+  session/                the runtime that plays one night
+  state/                  store, persistence, preferences, memory
+  domain/options.ts       every choice, as stable ids
+  i18n/                   en + tr dictionaries, typed against each other
+  data/content.ts         gradients and geometry — no words
+  chrome/                 Sky, BottomNav, SettingsSheet, Paywall, Toast
   ui/                     Button, Chip, Eyebrow, Pressable, Screen
-  screens/                the seventeen screens + TalkOverlay
+  screens/                twenty screens + TalkOverlay
 ```
 
-Styling is CSS Modules against the custom properties in `styles/global.css`; screen
-files import their own module last so their rules layer over the shared ones.
+Styling is CSS Modules over the tokens in `styles/global.css`; screen files
+import their own module last so their rules layer over the shared ones.
 
-## Screens
-
-Splash → Onboarding (5 steps) → Home → Create → Generating → Session → Sleep Fade →
-Complete, plus Explore, My Nights (filled and empty), Dream Detail, AI Companion,
-Profile, Privacy, Premium, Notifications and the Error state.
-
-Each one is addressable by hash — `#/premium`, `#/error` — so any screen can be opened
-directly for review without a screen-picker in the UI. Normal navigation keeps the hash
+Every screen is addressable by hash — `#/premium`, `#/memory`, `#/error` — so
+any of them can be opened directly for review. Normal navigation keeps the hash
 in step.
 
 ## Pacing
 
-Timings are the prototype's, and live in `state/appState.tsx`:
-
-| Constant | Value | What it does |
+| Constant | Where | Value |
 | --- | --- | --- |
-| `SPLASH_MS` | 3000 | splash dissolves into onboarding |
-| `GEN_STEP_MS` × `GEN_STEPS` | 1200 × 4 | generation phrases and the hairline bar |
-| `DIM_MS` | 5000 | session controls fade; a tap restarts it |
-| `FADE_MS` | 5200 | sleep fade hands over to the summary |
+| `SPLASH_MS` | `state/appState.tsx` | 3000 — splash dissolves |
+| `DIM_MS` | `state/appState.tsx` | 5000 — session controls fade |
+| `FADE_MS` | `state/appState.tsx` | 5200 — sleep fade hands over |
+| `MINUTES_PER_SEGMENT` | `state/appState.tsx` | 3 — speech per generated segment |
+| `WPM` | `ai/voice.ts` | 75 / 95 / 120 — reading pace by speed setting |
+
+`WPM` is what keeps a night honest: a muted session, a device with no installed
+voices, or a synthesis engine that returns instantly would otherwise drain an
+hour-long dream in seconds.
 
 ## Notes on the port
 
-- The design-tool chrome (screen rail, phone bezel, design-notes column) is not part of
-  the app. The screens fill the viewport, and hold a single phone-width column on
-  anything wider than `--app-max-width`.
-- The status bar, dynamic island and home indicator were the simulator's, so they are
-  gone; their space is kept through `--screen-pt` and `--nav-pb`, which grow only on
-  devices with real safe-area insets.
-- Atmosphere is still gradient placeholder art, as in the prototype. Real imagery,
-  ambient audio mixing and an Android variant were the design's own next steps.
-- `prefers-reduced-motion` drops the decorative drift, twinkle, ripple and wave. The orb
-  keeps breathing without the scale change — it is the app's pulse, not decoration.
+- The design-tool chrome (screen rail, phone bezel, design-notes column) is not
+  part of the app. Screens fill the viewport and hold a single phone-width
+  column on anything wider than `--app-max-width`.
+- The status bar, dynamic island and home indicator were the simulator's. Their
+  space is kept through `--screen-pt` and `--nav-pb`, which grow only on devices
+  with real safe-area insets.
+- Atmosphere is still gradient placeholder art, as in the prototype. Real
+  imagery and an ambient audio mix were the design's own next steps; the mix
+  slider on the session screen is still decorative.
+- `prefers-reduced-motion` drops the decorative drift, twinkle, ripple and wave.
+  The orb keeps breathing without the scale change.
+- Premium is a local flag set by `purchasePremium` in `state/appState.tsx`.
+  Everything downstream reads the flag, so StoreKit or Play Billing replaces
+  that one function.

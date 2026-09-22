@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import type { Screen } from '../types'
 import styles from './BottomNav.module.css'
@@ -9,16 +10,21 @@ interface Tab {
   owns?: readonly Screen[]
 }
 
-const TABS: readonly Tab[] = [
-  { id: 'home', label: 'Home' },
-  { id: 'explore', label: 'Explore' },
-  { id: 'create', label: 'Create' },
-  { id: 'nights', label: 'Sessions', owns: ['detail'] },
-  { id: 'profile', label: 'Profile', owns: ['privacy', 'premium', 'notif', 'companion'] },
-]
-
 export function BottomNav() {
   const { screen, go } = useApp()
+  const { t } = useI18n()
+
+  const TABS: readonly Tab[] = [
+    { id: 'home', label: t.nav.home },
+    { id: 'explore', label: t.nav.explore },
+    { id: 'create', label: t.nav.create },
+    { id: 'nights', label: t.nav.sessions, owns: ['detail'] },
+    {
+      id: 'profile',
+      label: t.nav.profile,
+      owns: ['privacy', 'premium', 'notif', 'companion', 'memory'],
+    },
+  ]
 
   return (
     <nav className={styles.nav}>

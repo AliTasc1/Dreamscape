@@ -1,0 +1,18 @@
+/* One line, low on the screen, gone in a few seconds. */
+.toast {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: calc(var(--nav-h) + 16px);
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: rgba(18, 23, 50, 0.92);
+  border: 1px solid var(--line-hi);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font: 300 13px/1.6 var(--ui);
+  color: rgba(234, 236, 247, 0.8);
+  text-align: center;
+  animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  z-index: 5;
+}

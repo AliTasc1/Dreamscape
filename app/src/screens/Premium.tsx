@@ -1,4 +1,4 @@
-import { PLANS, PREMIUM_FEATURES } from '../data/content'
+import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
 import { Pressable } from '../ui/Pressable'
@@ -6,7 +6,13 @@ import { Screen } from '../ui/Screen'
 import styles from './Premium.module.css'
 
 export function Premium() {
-  const { plan, setPlan } = useApp()
+  const { t } = useI18n()
+  const app = useApp()
+
+  const plans = [
+    { id: 'monthly' as const, ...t.premium.plans.monthly },
+    { id: 'yearly' as const, ...t.premium.plans.yearly },
+  ]
 
   return (
     <Screen className={styles.premium}>
@@ -16,10 +22,10 @@ export function Premium() {
       </div>
 
       <div className={styles.body}>
-        <div className={styles.title}>Go deeper into your dreams.</div>
+        <div className={styles.title}>{t.premium.title}</div>
 
         <div className={styles.features}>
-          {PREMIUM_FEATURES.map((feature) => (
+          {t.premium.features.map((feature) => (
             <div key={feature} className={styles.feature}>
               <div className={styles.bullet} />
               <div className={styles.featureText}>{feature}</div>
@@ -28,12 +34,12 @@ export function Premium() {
         </div>
 
         <div className={styles.plans}>
-          {PLANS.map((option) => (
+          {plans.map((option) => (
             <Pressable
-              key={option.name}
-              className={`${styles.plan}${plan === option.name ? ` ${styles.planActive}` : ''}`}
-              onClick={() => setPlan(option.name)}
-              pressed={plan === option.name}
+              key={option.id}
+              className={`${styles.plan}${app.billing === option.id ? ` ${styles.planActive}` : ''}`}
+              onClick={() => app.setBilling(option.id)}
+              pressed={app.billing === option.id}
               label={`${option.name}, ${option.price}, ${option.note}`}
             >
               <div className={styles.planName}>{option.name}</div>
@@ -49,10 +55,29 @@ export function Premium() {
           height={56}
           fontSize={15}
           className={styles.cta}
+          onClick={app.purchasePremium}
+          disabled={app.premium || app.purchasing}
+          style={app.premium ? { opacity: 0.6, cursor: 'default' } : undefined}
         >
-          Start 7 quiet nights free
+          {app.premium
+            ? t.premium.ctaOwned
+            : app.purchasing
+              ? t.premium.purchasing
+              : t.premium.cta}
         </Button>
-        <div className={styles.fine}>Cancel any time. No reminders, ever.</div>
+
+        <div className={styles.fine}>{t.premium.fine}</div>
+
+        {app.premium && (
+          <Button
+            variant="ghost"
+            block
+            className={styles.manage}
+            onClick={app.cancelPremium}
+          >
+            {t.premium.cancel}
+          </Button>
+        )}
       </div>
     </Screen>
   )

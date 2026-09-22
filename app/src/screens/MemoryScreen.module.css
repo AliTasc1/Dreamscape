@@ -1,0 +1,84 @@
+.back {
+  font-size: 13px;
+  color: var(--ink-45);
+}
+
+.title {
+  font: 300 26px/1.35 var(--voice);
+  color: var(--ink-bright);
+  margin-top: 18px;
+}
+
+.lede {
+  font: 300 13px/1.9 var(--ui);
+  color: rgba(234, 236, 247, 0.5);
+  margin-top: 12px;
+  text-wrap: pretty;
+}
+
+.count {
+  font: 300 11.5px var(--ui);
+  color: var(--ink-35);
+  margin-top: 10px;
+}
+
+.empty {
+  margin-top: 60px;
+  text-align: center;
+  font: 300 italic 18px/1.7 var(--voice);
+  color: var(--ink-45);
+}
+
+.group {
+  margin-top: 28px;
+}
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.entryText {
+  font: 300 13px/1.6 var(--ui);
+  color: rgba(234, 236, 247, 0.72);
+  min-width: 0;
+}
+
+.entryDate {
+  font: 300 11px var(--ui);
+  color: var(--ink-32);
+  margin-top: 4px;
+}
+
+/* A moment is the listener's own sentence, so it keeps the serif. */
+.moment {
+  font: 300 italic 14px/1.7 var(--voice);
+  color: rgba(234, 236, 247, 0.72);
+}
+
+.forget {
+  flex: none;
+  font-size: 11.5px;
+  color: rgba(226, 140, 140, 0.75);
+}
+
+.forget:hover {
+  color: rgba(236, 160, 160, 0.95);
+}
+
+.forgetAll {
+  margin-top: 30px;
+}

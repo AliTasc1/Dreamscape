@@ -38,6 +38,13 @@
   gap: 24px;
 }
 
+.durations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .done {
   margin-top: 26px;
 }

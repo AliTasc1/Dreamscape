@@ -54,6 +54,14 @@
   min-height: 30px;
 }
 
+/* The name the night was given, the moment it has one. */
+.planTitle {
+  font: 300 italic 17px/1.6 var(--voice);
+  color: rgba(234, 236, 247, 0.55);
+  margin-top: 12px;
+  animation: fadeIn 1.2s ease both;
+}
+
 /* A hairline, not a progress bar — the wait is meant to feel unmeasured. */
 .track {
   width: 120px;

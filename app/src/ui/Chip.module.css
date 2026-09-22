@@ -39,6 +39,11 @@
   color: var(--ink-55);
 }
 
+/* Out of reach — a length this account cannot pick yet. */
+.disabled {
+  opacity: 0.4;
+}
+
 /* Dream Detail's tags sit one pixel wider than Home's example prompts. */
 .wide {
   padding-left: 14px;

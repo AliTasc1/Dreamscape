@@ -1,26 +1,29 @@
-import { NOTIFS, NOTIF_TOGGLES } from '../data/content'
+import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
 import { Pressable } from '../ui/Pressable'
 import { Screen } from '../ui/Screen'
 import styles from './Notifications.module.css'
 
+const TOGGLE_KEYS = ['bedtime', 'weekly', 'finished', 'quiet'] as const
+
 export function Notifications() {
-  const { go, notifOn, toggleNotif } = useApp()
+  const { t } = useI18n()
+  const app = useApp()
 
   return (
     <Screen scroll>
-      <Button variant="ghost" className={styles.back} onClick={() => go('profile')}>
-        &lsaquo; Profile
+      <Button variant="ghost" className={styles.back} onClick={() => app.go('profile')}>
+        &lsaquo; {t.nav.profile}
       </Button>
-      <div className={styles.title}>A gentle nudge</div>
+      <div className={styles.title}>{t.notif.title}</div>
 
       <div className={styles.previews}>
-        {NOTIFS.map((message) => (
+        {t.notif.previews.map((message) => (
           <div key={message} className={styles.preview}>
             <div className={styles.icon} />
             <div>
-              <div className={styles.appName}>Dreamscape</div>
+              <div className={styles.appName}>{t.common.appName}</div>
               <div className={styles.previewBody}>{message}</div>
             </div>
           </div>
@@ -28,13 +31,14 @@ export function Notifications() {
       </div>
 
       <div className={styles.toggles}>
-        {NOTIF_TOGGLES.map((label) => {
-          const on = !!notifOn[label]
+        {TOGGLE_KEYS.map((key) => {
+          const on = !!app.notifOn[key]
+          const label = t.notif.toggles[key]
           return (
             <Pressable
-              key={label}
+              key={key}
               className={styles.toggle}
-              onClick={() => toggleNotif(label)}
+              onClick={() => app.toggleNotif(key)}
               label={label}
               pressed={on}
             >

@@ -47,8 +47,37 @@
   white-space: pre-line;
 }
 
+/* What the night taught the companion, shown before it is filed away. */
+.learned {
+  margin-top: 26px;
+}
+
+.learnedList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.learnedItem {
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: rgba(169, 176, 255, 0.12);
+  border: 1px solid rgba(169, 176, 255, 0.28);
+  font: 300 12px var(--ui);
+  color: rgba(234, 236, 247, 0.7);
+}
+
 .spacer {
   flex: 1;
+  min-height: 24px;
+}
+
+.footnote {
+  text-align: center;
+  font: 300 11px var(--ui);
+  color: var(--ink-32);
+  margin-top: 12px;
 }
 
 .actions {

@@ -32,10 +32,33 @@
   background: rgba(169, 176, 255, 0.6);
 }
 
-.transcript {
-  font: 300 13.5px/1.9 var(--ui);
-  color: var(--ink-45);
-  max-width: 250px;
+/* What was heard, editable — recognition is never right the first time. */
+.input {
+  width: 100%;
+  max-width: 300px;
+  height: 92px;
+  resize: none;
+  border: 1px solid rgba(234, 236, 247, 0.12);
+  border-radius: 18px;
+  outline: none;
+  background: rgba(234, 236, 247, 0.04);
+  color: var(--ink);
+  font: 300 14px/1.7 var(--ui);
+  padding: 14px 16px;
   text-align: center;
-  text-wrap: pretty;
+}
+
+.input::placeholder {
+  color: var(--ink-40);
+}
+
+.note {
+  font: 300 12px var(--ui);
+  color: rgba(240, 168, 104, 0.7);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
 }

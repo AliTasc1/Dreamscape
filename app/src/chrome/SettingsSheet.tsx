@@ -1,7 +1,9 @@
-import { SHEET_GROUPS } from '../data/content'
+import { PREMIUM_DURATIONS, maxMinutesFor } from '../domain/options'
+import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
-import { ChoiceChips } from '../ui/Chip'
+import { Chip, ChoiceChips } from '../ui/Chip'
+import { Eyebrow } from '../ui/Eyebrow'
 import styles from './SettingsSheet.module.css'
 
 /**
@@ -9,32 +11,53 @@ import styles from './SettingsSheet.module.css'
  * are already the sleep-safe ones, so the sheet exists to be ignored.
  */
 export function SettingsSheet() {
-  const { closeSheet } = useApp()
+  const { t, minutes } = useI18n()
+  const app = useApp()
+  const allowed = maxMinutesFor(app.premium)
 
   return (
     <>
       <button
         type="button"
         className={styles.backdrop}
-        onClick={closeSheet}
-        aria-label="Close settings"
+        onClick={app.closeSheet}
+        aria-label={t.common.close}
       />
-      <div className={styles.sheet} role="dialog" aria-label="Voice, ambience and length">
+      <div className={styles.sheet} role="dialog" aria-label={t.create.settingsTitle}>
         <div className={styles.grabber} />
         <div className={styles.groups}>
-          {SHEET_GROUPS.map((group) => (
-            <ChoiceChips key={group.key} group={group} />
-          ))}
+          <ChoiceChips optionKey="voice" label={t.sheet.voice} />
+          <ChoiceChips optionKey="mood" label={t.sheet.mood} />
+          <ChoiceChips optionKey="amb" label={t.sheet.ambience} />
+
+          <div>
+            <Eyebrow style={{ letterSpacing: '0.2em' }}>{t.sheet.duration}</Eyebrow>
+            <div className={styles.durations}>
+              {PREMIUM_DURATIONS.map((option) => {
+                const locked = option > allowed
+                return (
+                  <Chip
+                    key={option}
+                    label={minutes(option)}
+                    active={app.minutes === option}
+                    disabled={locked}
+                    onClick={() => (locked ? app.openPaywall() : app.setMinutes(option))}
+                  />
+                )
+              })}
+            </div>
+          </div>
         </div>
+
         <Button
           variant="solidSoft"
           block
           height={54}
           fontSize={14}
           className={styles.done}
-          onClick={closeSheet}
+          onClick={app.closeSheet}
         >
-          Done
+          {t.common.done}
         </Button>
       </div>
     </>

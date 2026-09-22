@@ -1,26 +1,25 @@
-import { ONBOARDING } from '../data/content'
+import { ONBOARDING_ART } from '../data/content'
+import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
 import { Screen } from '../ui/Screen'
 import styles from './Onboarding.module.css'
 
 export function Onboarding() {
-  const { ob, nextOnboarding, go } = useApp()
-  const step = ONBOARDING[ob]
+  const { t } = useI18n()
+  const { ob, nextOnboarding, finishOnboarding } = useApp()
+  const step = t.onboarding.steps[ob] ?? t.onboarding.steps[0]
 
   return (
     <Screen className={styles.onboarding}>
       <div className={styles.dots}>
-        {ONBOARDING.map((_, i) => (
-          <div
-            key={i}
-            className={`${styles.dot}${i === ob ? ` ${styles.dotActive}` : ''}`}
-          />
+        {t.onboarding.steps.map((_, i) => (
+          <div key={i} className={`${styles.dot}${i === ob ? ` ${styles.dotActive}` : ''}`} />
         ))}
       </div>
 
       <div className={styles.body}>
-        <div className={styles.art} style={{ background: step.art }}>
+        <div className={styles.art} style={{ background: ONBOARDING_ART[ob] }}>
           <div className={styles.artMoon} />
           <div className={styles.artScrim} />
         </div>
@@ -40,8 +39,8 @@ export function Onboarding() {
         >
           {step.cta}
         </Button>
-        <Button variant="ghost" block className={styles.skip} onClick={() => go('home')}>
-          Skip
+        <Button variant="ghost" block className={styles.skip} onClick={finishOnboarding}>
+          {t.common.skip}
         </Button>
       </div>
     </Screen>
