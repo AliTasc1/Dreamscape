@@ -12,18 +12,6 @@
   overflow: hidden;
 }
 
-.moon {
-  position: absolute;
-  left: 50%;
-  top: 70px;
-  transform: translateX(-50%);
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #f6f1ff, #c3a9e8 45%, #7a6aa8 80%);
-  animation: moonGlow 8s ease-in-out infinite;
-}
-
 .heroScrim {
   position: absolute;
   left: 0;

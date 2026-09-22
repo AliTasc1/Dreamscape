@@ -1,3 +1,4 @@
+import { NightScene } from '../art/NightScene'
 import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
@@ -17,7 +18,7 @@ export function Premium() {
   return (
     <Screen className={styles.premium}>
       <div className={styles.hero}>
-        <div className={styles.moon} />
+        <NightScene palette="violet" moonX={0.5} />
         <div className={styles.heroScrim} />
       </div>
 

@@ -1,4 +1,5 @@
-import { ONBOARDING_ART } from '../data/content'
+import { NightScene } from '../art/NightScene'
+import { ONBOARDING_PALETTES } from '../data/content'
 import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
@@ -19,8 +20,8 @@ export function Onboarding() {
       </div>
 
       <div className={styles.body}>
-        <div className={styles.art} style={{ background: ONBOARDING_ART[ob] }}>
-          <div className={styles.artMoon} />
+        <div className={styles.art}>
+          <NightScene palette={ONBOARDING_PALETTES[ob]} moonX={0.3 + ob * 0.12} />
           <div className={styles.artScrim} />
         </div>
         <div className={styles.title}>{step.title}</div>

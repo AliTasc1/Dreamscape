@@ -19,8 +19,14 @@
   border-radius: 28px;
   overflow: hidden;
   height: 280px;
-  background: linear-gradient(170deg, #1c2a4a, #0e1428 55%, #0a0d1c);
+  background: #0a0d1c;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* The drawn scene sits underneath; the glow and scrim stay on top of it. */
+.heroArt {
+  position: absolute;
+  inset: 0;
 }
 
 .heroGlow {

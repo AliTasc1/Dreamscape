@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dreamscape">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1B2450"/>
+      <stop offset="60%" stop-color="#0A0E20"/>
+      <stop offset="100%" stop-color="#05070F"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#96A0FF" stop-opacity=".42"/>
+      <stop offset="60%" stop-color="#96A0FF" stop-opacity=".12"/>
+      <stop offset="100%" stop-color="#96A0FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moon" cx="34%" cy="30%" r="74%">
+      <stop offset="0%" stop-color="#FBFAFF"/>
+      <stop offset="46%" stop-color="#DCDDF5"/>
+      <stop offset="80%" stop-color="#A9ADD4"/>
+      <stop offset="100%" stop-color="#6E719A"/>
+    </radialGradient>
+    <!-- The crescent is the disc minus an offset disc, not a drawn curve. -->
+    <mask id="crescent">
+      <rect width="512" height="512" fill="#000"/>
+      <circle cx="256" cy="248" r="118" fill="#fff"/>
+      <circle cx="308" cy="214" r="104" fill="#000"/>
+    </mask>
+  </defs>
+
+  <rect width="512" height="512" rx="114" fill="url(#bg)"/>
+  <circle cx="256" cy="248" r="210" fill="url(#halo)"/>
+  <circle cx="256" cy="248" r="118" fill="url(#moon)" mask="url(#crescent)"/>
+
+  <g fill="#EAECF7">
+    <circle cx="352" cy="352" r="5" opacity=".85"/>
+    <circle cx="150" cy="150" r="4" opacity=".55"/>
+    <circle cx="390" cy="152" r="3.5" opacity=".45"/>
+    <circle cx="128" cy="330" r="3" opacity=".4"/>
+  </g>
+
+  <!-- The horizon the whole product sits on. -->
+  <path d="M96 404 L168 386 L240 400 L312 382 L416 402" stroke="#8B93FF" stroke-opacity=".38"
+        stroke-width="7" stroke-linecap="round" fill="none"/>
+</svg>

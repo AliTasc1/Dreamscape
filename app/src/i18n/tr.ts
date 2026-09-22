@@ -160,6 +160,7 @@ export const tr: Locale = {
     hint: '“Bana aşk hakkında bir şey söyle.”',
     backToDream: 'Rüyaya dön',
     backToWriting: 'Yazmaya dön',
+    micDenied: 'Mikrofon erişimi engelli. Tarayıcından izin ver ya da yazarak anlat.',
     unsupported: 'Bu tarayıcı dinleyemiyor. Yazarak anlat.',
     send: 'Gönder',
     placeholder: 'Eşlikçine bir şey söyle…',

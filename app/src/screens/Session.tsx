@@ -3,7 +3,7 @@ import { useNightSession } from '../session/useNightSession'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
 import { Screen } from '../ui/Screen'
-import { TalkOverlay } from './TalkOverlay'
+import { Conversation } from './Conversation'
 import styles from './Session.module.css'
 
 function clock(seconds: number): string {
@@ -19,7 +19,13 @@ export function Session() {
   const orbSize = app.playing ? 112 : 88
 
   return (
-    <Screen className={styles.session} onClick={app.wakeUi}>
+    <Screen
+      className={styles.session}
+      onClick={() => {
+        night.resumeAudio()
+        app.wakeUi()
+      }}
+    >
       <div className={styles.horizon}>
         <div data-decor className={styles.waves} />
       </div>
@@ -69,18 +75,38 @@ export function Session() {
           </Button>
         </div>
 
-        <div className={styles.controls}>
+        <div className={styles.controls} hidden={app.talk}>
           {app.prefs.amb !== 'none' && (
             <div className={styles.mixRow}>
               <div className={styles.mixLabel}>{t.options.amb[app.prefs.amb]}</div>
               <div className={styles.mixTrack}>
-                <div className={styles.mixFill} />
-                <div className={styles.mixKnob} />
+                <div
+                  className={styles.mixFill}
+                  style={{ width: `${app.ambienceLevel * 100}%` }}
+                />
+                <div
+                  className={styles.mixKnob}
+                  style={{ left: `${app.ambienceLevel * 100}%` }}
+                />
+                <input
+                  className={styles.mixInput}
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={Math.round(app.ambienceLevel * 100)}
+                  onChange={(event) => app.setAmbienceLevel(Number(event.target.value) / 100)}
+                  aria-label={t.options.amb[app.prefs.amb]}
+                />
               </div>
             </div>
           )}
           <div className={styles.transport}>
-            <Button variant="glass" className={styles.round} onClick={app.openTalk}>
+            <Button
+              variant="glass"
+              className={`${styles.round}${app.talk ? ` ${styles.roundOn}` : ''}`}
+              onClick={app.talk ? app.closeTalk : app.openTalk}
+              aria-pressed={app.talk}
+            >
               {t.session.talk}
             </Button>
             <Button
@@ -98,7 +124,7 @@ export function Session() {
         </div>
       </div>
 
-      {app.talk && <TalkOverlay dismissLabel={t.talk.backToDream} onSay={night.say} />}
+      {app.talk && <Conversation night={night} />}
 
       {night.finished && (
         <div className={styles.timeUp}>

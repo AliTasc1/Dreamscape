@@ -45,6 +45,37 @@ Garamond italic** for anything the companion would say out loud. One accent
    it to real reading speed. Talk sends what you say back into the dream.
 6. **Complete** reflects on the night and files what it learned.
 
+At any point in step 5 you can talk back — by voice or by typing — and the
+companion answers inside the dream before carrying on.
+
+## Sound
+
+Two things play at once during a session.
+
+**The voice** comes from the service when one is configured, and from the
+browser's own synthesis otherwise. Paragraphs are paced to real reading speed
+(`WPM` in `ai/voice.ts`) so a muted or voiceless device cannot race an hour-long
+night into thirty seconds.
+
+**The ambient bed** is synthesised in the browser — `audio/ambience.ts`. No
+files, no API, no licensing, and no loop point, which matters more here than
+fidelity: a recorded loop gives itself away within minutes and these sessions
+run for an hour. Each bed is coloured noise through a moving filter for the body
+of the sound, plus sparse scheduled grains for the events on top — droplets,
+crackles, birdsong, crickets, the murmur of a café. The mix slider on the
+session screen is a real `<input type="range">` over the drawn one, and the bed
+ducks while the listener is speaking.
+
+## Talking back
+
+The Talk button opens a conversation panel rather than a modal: the orb stays
+visible and the night keeps running behind it. The microphone stays open;
+starting to speak pauses the narration, a pause in speaking ends the turn, and
+what was said goes back into the next request so the companion answers in
+character before carrying on. Typing does the same for anyone who cannot or
+would rather not speak. `session/useSpeech.ts` handles the turn-taking and
+restarts the recognition stream that Chrome closes on its own every so often.
+
 ## Memory
 
 `src/state/memory.ts` keeps a short, human-readable profile — themes, feelings,
@@ -64,6 +95,8 @@ src/
   domain/options.ts       every choice, as stable ids
   i18n/                   en + tr dictionaries, typed against each other
   data/content.ts         gradients and geometry — no words
+  art/NightScene.tsx      the one piece of artwork, in four palettes
+  audio/ambience.ts       synthesised ambient beds
   chrome/                 Sky, BottomNav, SettingsSheet, Paywall, Toast
   ui/                     Button, Chip, Eyebrow, Pressable, Screen
   screens/                twenty screens + TalkOverlay
@@ -98,9 +131,11 @@ hour-long dream in seconds.
 - The status bar, dynamic island and home indicator were the simulator's. Their
   space is kept through `--screen-pt` and `--nav-pb`, which grow only on devices
   with real safe-area insets.
-- Atmosphere is still gradient placeholder art, as in the prototype. Real
-  imagery and an ambient audio mix were the design's own next steps; the mix
-  slider on the session screen is still decorative.
+- The artwork is drawn, not photographed: `art/NightScene.tsx` is one moonlit
+  scene in four palettes, used across onboarding, Home, Dream Detail and
+  Premium. It weighs a few kilobytes, scales to any card, and retints per
+  context instead of needing a picture per scene. `public/icon.svg` is the app
+  mark.
 - `prefers-reduced-motion` drops the decorative drift, twinkle, ripple and wave.
   The orb keeps breathing without the scale change.
 - Premium is a local flag set by `purchasePremium` in `state/appState.tsx`.

@@ -8,7 +8,7 @@
 .hero {
   position: relative;
   height: 330px;
-  background: linear-gradient(170deg, #23304f, #0e1428 60%);
+  background: #0e1428;
   overflow: hidden;
 }
 

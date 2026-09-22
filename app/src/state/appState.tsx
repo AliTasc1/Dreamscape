@@ -76,6 +76,8 @@ interface Ephemeral {
   purchasing: boolean
   /** Seconds already spent inside the current session. */
   elapsed: number
+  /** Ambient bed volume, 0–1, driven by the session's mix slider. */
+  ambienceLevel: number
   reflection: Reflection | null
   transcript: string
   toast: string | null
@@ -102,6 +104,7 @@ const INITIAL_EPHEMERAL: Ephemeral = {
   billing: 'yearly',
   purchasing: false,
   elapsed: 0,
+  ambienceLevel: 0.62,
   reflection: null,
   transcript: '',
   toast: null,
@@ -145,6 +148,7 @@ interface Store extends Ephemeral, Omit<Persisted, 'lang' | 'tone'> {
   closeTalk: () => void
   wakeUi: () => void
   tickElapsed: (seconds: number) => void
+  setAmbienceLevel: (level: number) => void
   appendTranscript: (text: string) => void
   endNight: (to: Extract<Screen, 'fade' | 'complete'>) => void
 
@@ -425,6 +429,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       },
 
       tickElapsed: (seconds: number) => setState((s) => ({ ...s, elapsed: seconds })),
+
+      setAmbienceLevel: (level: number) =>
+        setState((s) => ({ ...s, ambienceLevel: Math.min(1, Math.max(0, level)) })),
 
       appendTranscript: (text: string) =>
         setState((s) => ({ ...s, transcript: `${s.transcript}${text}` })),

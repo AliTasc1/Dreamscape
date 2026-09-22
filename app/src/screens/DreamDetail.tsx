@@ -1,3 +1,4 @@
+import { NightScene } from '../art/NightScene'
 import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
@@ -23,6 +24,7 @@ export function DreamDetail() {
     <>
       <div className={styles.scroll}>
         <div className={styles.hero}>
+          <NightScene palette="indigo" moonX={0.66} />
           <div className={styles.heroGlow} />
           <div className={styles.heroScrim} />
           <button

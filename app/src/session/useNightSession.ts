@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as ai from '../ai/client'
 import { Narrator, stripMarkers } from '../ai/voice'
+import { Ambience } from '../audio/ambience'
 import { MINUTES_PER_SEGMENT, useApp } from '../state/appState'
 
 /**
@@ -11,12 +12,23 @@ import { MINUTES_PER_SEGMENT, useApp } from '../state/appState'
  * are handed to the voice as soon as they are complete, and the next segment
  * is fetched when the voice runs out of things to say. The clock runs
  * underneath all of it and ends the night when the chosen length is up.
+ *
+ * The listener can interrupt at any point: speaking pauses the narration, and
+ * what they said goes back in as the opening of the next request, so the
+ * companion answers in character and then carries on.
  */
+
+export interface Turn {
+  id: number
+  who: 'you' | 'companion'
+  text: string
+}
+
 export interface NightSession {
   /** The line currently being spoken. */
   line: string
-  /** Everything spoken so far, newest last. */
-  history: string[]
+  /** Both sides of the night, newest last. */
+  turns: Turn[]
   elapsed: number
   remaining: number
   /** True once the chosen length has run out. */
@@ -25,16 +37,22 @@ export interface NightSession {
   buffering: boolean
   /** Sends something the listener said into the dream. */
   say: (text: string) => void
+  /** Holds the narration while the listener is talking. */
+  beginListening: () => void
+  endListening: () => void
+  /** Revives audio the browser suspended for want of a gesture. */
+  resumeAudio: () => void
 }
 
 export function useNightSession(): NightSession {
   const app = useApp()
   const [line, setLine] = useState('')
-  const [history, setHistory] = useState<string[]>([])
+  const [turns, setTurns] = useState<Turn[]>([])
   const [buffering, setBuffering] = useState(true)
   const [finished, setFinished] = useState(false)
 
   const narrator = useRef<Narrator | null>(null)
+  const ambience = useRef<Ambience | null>(null)
   const controller = useRef<AbortController | null>(null)
   const buffer = useRef('')
   const segment = useRef(0)
@@ -42,12 +60,17 @@ export function useNightSession(): NightSession {
   const requesting = useRef(false)
   const startedAt = useRef(Date.now())
   const endedRef = useRef(false)
+  const turnId = useRef(0)
 
   const totalSeconds = app.minutes * 60
   const segments = Math.max(2, Math.ceil(app.minutes / MINUTES_PER_SEGMENT))
 
   const appRef = useRef(app)
   appRef.current = app
+
+  const pushTurn = useCallback((who: Turn['who'], text: string) => {
+    setTurns((previous) => [...previous, { id: ++turnId.current, who, text }].slice(-20))
+  }, [])
 
   /** Splits whatever has streamed in on blank lines and speaks the whole ones. */
   const drainBuffer = useCallback((flush: boolean) => {
@@ -101,7 +124,8 @@ export function useNightSession(): NightSession {
           ctl.signal,
         )
         drainBuffer(true)
-        segment.current += 1
+        // An answer to an interruption is not a step through the night.
+        if (!userSaid) segment.current += 1
       } catch {
         // Losing a segment should not end the night; the drain handler will
         // ask for the next one.
@@ -113,7 +137,7 @@ export function useNightSession(): NightSession {
     [drainBuffer, segments],
   )
 
-  /* The voice: created once per session, torn down on the way out. */
+  /* The voice and the room tone: created once per session. */
   useEffect(() => {
     const current = appRef.current
     const instance = new Narrator(
@@ -126,7 +150,6 @@ export function useNightSession(): NightSession {
         tone: current.tone,
       },
       () => {
-        // Queue empty: either fetch more, or the night is over.
         if (endedRef.current) return
         if (segment.current < segments) void requestSegment()
         else setFinished(true)
@@ -134,10 +157,16 @@ export function useNightSession(): NightSession {
       (text) => {
         const clean = stripMarkers(text)
         setLine(clean)
-        setHistory((h) => [...h, clean].slice(-40))
+        pushTurn('companion', clean)
       },
     )
     narrator.current = instance
+
+    const bed = new Ambience()
+    bed.play(current.prefs.amb)
+    bed.setLevel(current.ambienceLevel)
+    ambience.current = bed
+
     startedAt.current = Date.now()
     endedRef.current = false
     segment.current = 0
@@ -149,7 +178,9 @@ export function useNightSession(): NightSession {
       endedRef.current = true
       controller.current?.abort()
       instance.stop()
+      bed.stop()
       narrator.current = null
+      ambience.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -167,12 +198,21 @@ export function useNightSession(): NightSession {
   }, [app.caps, app.lang, app.prefs, app.tone])
 
   useEffect(() => {
+    ambience.current?.play(app.prefs.amb)
+  }, [app.prefs.amb])
+
+  useEffect(() => {
+    ambience.current?.setLevel(app.ambienceLevel)
+  }, [app.ambienceLevel])
+
+  useEffect(() => {
     if (app.playing) narrator.current?.resume()
     else narrator.current?.pause()
   }, [app.playing])
 
   useEffect(() => {
     narrator.current?.setMuted(app.muted)
+    ambience.current?.setMuted(app.muted)
   }, [app.muted])
 
   /* The clock. */
@@ -184,6 +224,7 @@ export function useNightSession(): NightSession {
         endedRef.current = true
         controller.current?.abort()
         narrator.current?.stop()
+        ambience.current?.setMuted(true)
         setFinished(true)
         window.clearInterval(id)
       }
@@ -195,21 +236,36 @@ export function useNightSession(): NightSession {
     (text: string) => {
       const said = text.trim()
       if (!said) return
+      pushTurn('you', said)
       appRef.current.appendTranscript(`\n[listener] ${said}\n\n`)
       narrator.current?.clearQueue()
       buffer.current = ''
       void requestSegment(said)
     },
-    [requestSegment],
+    [pushTurn, requestSegment],
   )
+
+  /* Barge-in: the dream steps back the moment the listener starts talking. */
+  const beginListening = useCallback(() => {
+    narrator.current?.pause()
+    ambience.current?.setLevel(appRef.current.ambienceLevel * 0.35)
+  }, [])
+
+  const endListening = useCallback(() => {
+    ambience.current?.setLevel(appRef.current.ambienceLevel)
+    if (appRef.current.playing) narrator.current?.resume()
+  }, [])
 
   return {
     line,
-    history,
+    turns,
     elapsed: app.elapsed,
     remaining: Math.max(0, totalSeconds - app.elapsed),
     finished,
     buffering,
     say,
+    beginListening,
+    endListening,
+    resumeAudio: useCallback(() => ambience.current?.resume(), []),
   }
 }

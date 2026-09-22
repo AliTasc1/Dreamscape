@@ -1,3 +1,4 @@
+import { NightScene } from '../art/NightScene'
 import { FAVOURITE_ART } from '../data/content'
 import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
@@ -25,6 +26,9 @@ export function Home() {
       <div className={styles.question}>{t.home.question}</div>
 
       <div className={styles.hero}>
+        <div className={styles.heroArt}>
+          <NightScene palette="indigo" moonX={0.74} />
+        </div>
         <div className={styles.heroGlow} />
         <div data-decor className={styles.heroMist} />
         <div className={styles.heroBody}>

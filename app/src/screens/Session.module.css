@@ -211,19 +211,34 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 62%;
   background: rgba(169, 176, 255, 0.6);
   border-radius: 2px;
+  pointer-events: none;
 }
 
 .mixKnob {
   position: absolute;
-  left: 62%;
   top: -4px;
   width: 10px;
   height: 10px;
+  margin-left: -5px;
   border-radius: 50%;
   background: var(--ink);
+  pointer-events: none;
+}
+
+/* The real control, invisible over the drawn one — a slider that is a slider. */
+.mixInput {
+  position: absolute;
+  inset: -12px 0;
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
 }
 
 .transport {
@@ -238,6 +253,13 @@
   border-radius: 50%;
   padding: 0;
   font-size: 11px;
+}
+
+/* Lit while the conversation panel is open. */
+.roundOn {
+  background: rgba(169, 176, 255, 0.2);
+  border-color: rgba(169, 176, 255, 0.5);
+  color: var(--ink-bright);
 }
 
 .play {

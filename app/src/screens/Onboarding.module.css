@@ -43,17 +43,6 @@
   box-shadow: inset 0 -60px 80px rgba(5, 7, 15, 0.75);
 }
 
-.artMoon {
-  position: absolute;
-  right: 38px;
-  top: 34px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 36% 32%, #f4f2ff, #b9bde8 60%, #7a7fae);
-  animation: moonGlow 9s ease-in-out infinite;
-}
-
 .artScrim {
   position: absolute;
   left: 0;

@@ -1,3 +1,5 @@
+import type { ScenePalette } from '../art/NightScene'
+
 /**
  * Everything visual that has no words in it.
  *
@@ -23,14 +25,14 @@ export const STAR_POSITIONS: readonly (readonly [number, number])[] = [
   [80, 19],
 ]
 
-/** Placeholder atmosphere, one per onboarding step. */
-export const ONBOARDING_ART: readonly string[] = [
-  'linear-gradient(170deg,#25315A,#0F1530)',
-  'linear-gradient(170deg,#1D2C4E,#0C1226)',
-  'linear-gradient(170deg,#2A2544,#0E1024)',
-  'linear-gradient(170deg,#1B3048,#0A121F)',
-  'linear-gradient(170deg,#2E2A4E,#0B0E1A)',
-]
+/** The scene is retinted and the moon moves, so five steps never repeat. */
+export const ONBOARDING_PALETTES = [
+  'indigo',
+  'teal',
+  'violet',
+  'indigo',
+  'ember',
+] as const satisfies readonly ScenePalette[]
 
 export const FAVOURITE_ART: readonly string[] = [
   'linear-gradient(165deg,#22344F,#0C1526)',

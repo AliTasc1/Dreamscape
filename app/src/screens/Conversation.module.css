@@ -1,0 +1,147 @@
+/*
+ * Conversation is a panel, not a modal: the orb stays visible above it and the
+ * night keeps going behind it. Nothing here interrupts the dream except the
+ * listener's own voice.
+ */
+.panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 72%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px 28px 0 0;
+  background: linear-gradient(180deg, rgba(16, 20, 46, 0.82), rgba(6, 9, 20, 0.97));
+  border-top: 1px solid rgba(234, 236, 247, 0.1);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  animation: rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.grabber {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(234, 236, 247, 0.2);
+  margin: 0 auto 14px;
+  flex: none;
+}
+
+.turns {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 6px;
+  min-height: 90px;
+}
+
+.turn {
+  max-width: 86%;
+}
+
+/* The companion keeps the serif — it is speech, not interface. */
+.companion {
+  align-self: flex-start;
+  font: 300 italic 15px/1.75 var(--voice);
+  color: rgba(234, 236, 247, 0.72);
+}
+
+.you {
+  align-self: flex-end;
+  text-align: right;
+  font: 300 14px/1.7 var(--ui);
+  color: var(--ink-bright);
+  background: rgba(169, 176, 255, 0.14);
+  border: 1px solid rgba(169, 176, 255, 0.28);
+  border-radius: 16px 16px 4px 16px;
+  padding: 10px 14px;
+}
+
+/* What is being heard right now, before the turn is finished. */
+.interim {
+  align-self: flex-end;
+  text-align: right;
+  font: 300 italic 14px/1.7 var(--ui);
+  color: var(--ink-45);
+  padding: 4px 2px;
+}
+
+.composer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  border: 1px solid rgba(234, 236, 247, 0.12);
+  border-radius: 23px;
+  outline: none;
+  background: rgba(234, 236, 247, 0.05);
+  color: var(--ink);
+  font: 300 14px var(--ui);
+  padding: 0 16px;
+}
+
+.input::placeholder {
+  color: var(--ink-40);
+}
+
+.mic {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 10px;
+  flex: none;
+}
+
+/* Lit while the microphone is open. */
+.micOn {
+  background: rgba(169, 176, 255, 0.22);
+  border-color: rgba(169, 176, 255, 0.55);
+  color: var(--ink-bright);
+  box-shadow: 0 0 22px rgba(139, 147, 255, 0.35);
+}
+
+.send {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 15px;
+  flex: none;
+}
+
+.status {
+  flex: none;
+  text-align: center;
+  font: 300 10.5px var(--ui);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-32);
+  margin-top: 10px;
+}
+
+.note {
+  flex: none;
+  text-align: center;
+  font: 300 11.5px/1.6 var(--ui);
+  color: rgba(240, 168, 104, 0.75);
+  margin-top: 8px;
+}
+
+.close {
+  flex: none;
+  margin-top: 6px;
+  height: 34px;
+  font-size: 12px;
+}

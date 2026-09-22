@@ -162,6 +162,7 @@ export const en = {
     hint: '“Tell me something about love.”',
     backToDream: 'Back to the dream',
     backToWriting: 'Back to writing',
+    micDenied: 'Microphone access is blocked. Allow it in your browser, or type instead.',
     unsupported: 'This browser cannot listen. Type instead.',
     send: 'Send',
     placeholder: 'Say something to your companion…',
