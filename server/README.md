@@ -5,10 +5,18 @@ night with Claude, and turning it into a voice.
 
 ```bash
 npm install
-cp .env.example .env    # optional — see below;  Windows: copy .env.example .env
-npm run check           # proves the keys work before anything depends on them
-npm run build && npm start
+npm run setup           # asks for the keys and writes .env — no hand-editing
+npm run check           # proves they work before anything depends on them
+npm start
 ```
+
+`npm run setup` prompts for each key, lists the voices on the ElevenLabs
+account so one can be picked by number, and writes `.env`. It keeps anything
+already in the file — Enter at any prompt leaves that value alone — and shows
+existing keys masked. Nothing typed into it leaves the machine.
+
+Hand-editing still works if you prefer: `cp .env.example .env` (`copy` on
+Windows) and fill it in.
 
 Every script here is cross-platform. `npm run dev` rebuilds once and then
 restarts the server on each change to `dist`; run `npm run watch` in a second

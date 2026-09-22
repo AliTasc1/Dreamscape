@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "setup": "tsc && node --env-file-if-exists=.env dist/setup.js",
     "start": "node --env-file-if-exists=.env dist/index.js",
     "dev": "tsc && node --watch --env-file-if-exists=.env dist/index.js",
     "watch": "tsc --watch --preserveWatchOutput",
