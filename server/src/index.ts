@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import * as claude from './claude.js'
+import { hasBuild, serveStatic, STATIC_DIR } from './static.js'
 import { listVoices, synthesize, voiceProvider } from './tts.js'
 import type {
   Capabilities,
@@ -87,6 +88,13 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     return
   }
 
+  // Anything that is not the API is the app itself, when it has been built.
+  if (!url.pathname.startsWith('/api/')) {
+    if (req.method === 'GET' && (await serveStatic(url.pathname, res))) return
+    json(res, 404, { error: 'not_found' })
+    return
+  }
+
   if (req.method !== 'POST') {
     json(res, 404, { error: 'not_found' })
     return
@@ -165,12 +173,17 @@ createServer((req, res) => {
     if (!res.headersSent) json(res, 500, { error: 'internal' })
     else res.end()
   })
-}).listen(PORT, () => {
+}).listen(PORT, async () => {
   const caps = capabilities()
-  console.log(`[dreamscape] listening on :${PORT}`)
-  console.log(`[dreamscape] narrator=${caps.narrator}${caps.model ? ` (${caps.model})` : ''}`)
+  console.log(`\n[dreamscape] narrator=${caps.narrator}${caps.model ? ` (${caps.model})` : ''}`)
   console.log(`[dreamscape] voice=${caps.voice}`)
   if (caps.narrator === 'none') {
     console.log('[dreamscape] set ANTHROPIC_API_KEY to write nights with Claude')
+  }
+  if (await hasBuild()) {
+    console.log(`\n[dreamscape] open  http://localhost:${PORT}\n`)
+  } else {
+    console.log(`\n[dreamscape] API only on :${PORT} — no app build found at ${STATIC_DIR}`)
+    console.log('[dreamscape] build it with:  cd ../app && npm install && npm run build\n')
   }
 })
