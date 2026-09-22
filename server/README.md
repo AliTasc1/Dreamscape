@@ -5,10 +5,14 @@ night with Claude, and turning it into a voice.
 
 ```bash
 npm install
-cp .env.example .env    # optional — see below
+cp .env.example .env    # optional — see below;  Windows: copy .env.example .env
 npm run check           # proves the keys work before anything depends on them
 npm run build && npm start
 ```
+
+Every script here is cross-platform. `npm run dev` rebuilds once and then
+restarts the server on each change to `dist`; run `npm run watch` in a second
+terminal if you want TypeScript recompiling as you edit.
 
 ## Setting up the keys
 
