@@ -57,6 +57,16 @@ browser's own synthesis otherwise. Paragraphs are paced to real reading speed
 (`WPM` in `ai/voice.ts`) so a muted or voiceless device cannot race an hour-long
 night into thirty seconds.
 
+Playback uses **one audio element for the whole session**, unlocked by the tap
+that starts the night. A fresh element per paragraph is what browsers block:
+only the first inherits that tap and every later one is refused until the
+listener taps again — which turns a narration into a slideshow. Three guards
+sit behind it, because the cause is invisible from inside the page: a blocked
+play resolves at once rather than waiting on an event that will not come, a
+watchdog releases a paragraph that neither ends nor errors, and Chrome's
+synthesis is nudged every five seconds since it otherwise stops part-way
+through anything long.
+
 **The ambient bed** is synthesised in the browser — `audio/ambience.ts`. No
 files, no API, no licensing, and no loop point, which matters more here than
 fidelity: a recorded loop gives itself away within minutes and these sessions
