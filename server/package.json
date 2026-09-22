@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "tsc -w --preserveWatchOutput & node --watch dist/index.js",
+    "dev": "tsc -w --preserveWatchOutput & node --watch --env-file-if-exists=.env dist/index.js",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "check": "tsc && node --env-file-if-exists=.env dist/check.js",
+    "voices": "tsc && node --env-file-if-exists=.env dist/voices.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

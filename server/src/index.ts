@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import * as claude from './claude.js'
-import { synthesize, voiceProvider } from './tts.js'
+import { listVoices, synthesize, voiceProvider } from './tts.js'
 import type {
   Capabilities,
   NarrateRequest,
@@ -69,6 +69,21 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
 
   if (url.pathname === '/api/capabilities') {
     json(res, 200, capabilities())
+    return
+  }
+
+  // Setup helper: the ids to paste into .env, straight from the account.
+  if (url.pathname === '/api/voices') {
+    if (!process.env.ELEVENLABS_API_KEY) {
+      json(res, 503, { error: 'not_configured', what: 'ELEVENLABS_API_KEY' })
+      return
+    }
+    try {
+      json(res, 200, { voices: await listVoices() })
+    } catch (error) {
+      const { status, body } = failure(error)
+      json(res, status, body)
+    }
     return
   }
 

@@ -96,30 +96,68 @@ function elevenSettings(req: TtsRequest) {
   }
 }
 
+/**
+ * Which optional fields a model accepts differs between them, and a rejected
+ * field fails the whole request. Rather than encode a table that goes stale,
+ * the full request is tried once and a minimal one is tried after a 4xx.
+ */
+async function elevenSpeak(voiceId: string, body: unknown): Promise<Response> {
+  return fetch(`${ELEVEN_ENDPOINT}/${voiceId}?output_format=mp3_44100_128`, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': process.env.ELEVENLABS_API_KEY as string,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+}
+
+/** The account's voices, so setup does not mean hunting for ids in a dashboard. */
+export async function listVoices(): Promise<
+  { id: string; name: string; labels: Record<string, string> }[]
+> {
+  const key = process.env.ELEVENLABS_API_KEY
+  if (!key) throw new Error('ELEVENLABS_API_KEY is not set')
+
+  const response = await fetch('https://api.elevenlabs.io/v2/voices?page_size=100', {
+    headers: { 'xi-api-key': key },
+  })
+  if (!response.ok) {
+    throw new Error(`ElevenLabs ${response.status}: ${await response.text()}`)
+  }
+  const body = (await response.json()) as {
+    voices?: { voice_id: string; name: string; labels?: Record<string, string> }[]
+  }
+  return (body.voices ?? []).map((v) => ({
+    id: v.voice_id,
+    name: v.name,
+    labels: v.labels ?? {},
+  }))
+}
+
 export async function synthesize(req: TtsRequest): Promise<ArrayBuffer> {
   const provider = voiceProvider()
 
   if (provider === 'elevenlabs') {
     const voiceId = elevenVoiceId(req.voice)
     if (!voiceId) throw new Error('no ElevenLabs voice configured')
+    const model = process.env.ELEVENLABS_MODEL || 'eleven_v3'
 
     // v3 reads the inline markers, so the text goes through untouched.
-    const response = await fetch(
-      `${ELEVEN_ENDPOINT}/${voiceId}?output_format=mp3_44100_128`,
-      {
-        method: 'POST',
-        headers: {
-          'xi-api-key': process.env.ELEVENLABS_API_KEY as string,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: req.text,
-          model_id: process.env.ELEVENLABS_MODEL || 'eleven_v3',
-          language_code: req.lang,
-          voice_settings: elevenSettings(req),
-        }),
-      },
-    )
+    let response = await elevenSpeak(voiceId, {
+      text: req.text,
+      model_id: model,
+      ...(process.env.ELEVENLABS_SEND_LANGUAGE === 'true' ? { language_code: req.lang } : null),
+      voice_settings: elevenSettings(req),
+    })
+
+    if (response.status >= 400 && response.status < 500) {
+      const detail = await response.text()
+      console.warn(`[dreamscape] ElevenLabs ${response.status} (${detail.slice(0, 200)})`)
+      console.warn('[dreamscape] retrying without the optional voice settings')
+      response = await elevenSpeak(voiceId, { text: req.text, model_id: model })
+    }
+
     if (!response.ok) {
       throw new Error(`ElevenLabs ${response.status}: ${await response.text()}`)
     }

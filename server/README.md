@@ -6,8 +6,53 @@ night with Claude, and turning it into a voice.
 ```bash
 npm install
 cp .env.example .env    # optional — see below
+npm run check           # proves the keys work before anything depends on them
 npm run build && npm start
 ```
+
+## Setting up the keys
+
+Both are optional and the app runs without either — this is what each one buys.
+
+### Anthropic — who writes the night
+
+1. [console.anthropic.com](https://console.anthropic.com) → **API keys** → create one
+2. Put it in `.env` as `ANTHROPIC_API_KEY=`
+3. `npm run check` — it sends one real planning request and prints the title
+   and persona it came back with
+
+Without it, `ai/localEngine.ts` in the app writes the night instead: it reads
+the prompt for place, persona and feeling and composes from written banks. It
+works, in both languages, but it is not Claude.
+
+### ElevenLabs — who speaks it
+
+1. [elevenlabs.io](https://elevenlabs.io) → profile → **API key**
+2. Put it in `.env` as `ELEVENLABS_API_KEY=`
+3. `npm run voices` — lists every voice on the account with its id
+4. Paste one in as `ELEVENLABS_VOICE_ID=`
+5. `npm run check` — synthesises a line *with markers in it* and writes
+   `voice-check.mp3`. Play it: you should hear the whisper and the breath.
+
+Voice ids are per-account, which is why none ship as defaults. Optionally set
+`ELEVENLABS_VOICE_FEMALE` / `_MALE` / `_NEUTRAL` / `_WARM` / `_DEEP` /
+`_WHISPER` to give each of the app's voice settings its own actor; anything
+unset falls back to `ELEVENLABS_VOICE_ID`.
+
+**Model.** `eleven_v3` is the default because it is the one that performs the
+inline markers. `eleven_multilingual_v2` is cheaper and flatter;
+`eleven_flash_v2_5` is the fastest. Override with `ELEVENLABS_MODEL`.
+
+**Cost, roughly.** About 1,000 characters of text becomes a minute of speech,
+and on the multilingual models one character is one credit. A ten-minute night
+is on the order of 6–9k characters. Creator ($22/mo, 121k credits) is about
+two hours of narration a month; Pro ($99/mo, 600k credits) about ten. Overage
+runs ~$0.17–0.18 a minute. Budget per *finished* night, not per request —
+a listener who interrupts generates extra speech.
+
+Without ElevenLabs the browser's own `speechSynthesis` speaks instead, with the
+markers stripped and their pauses kept as punctuation. Free, offline, and much
+flatter.
 
 The app proxies `/api` here in development (`app/vite.config.ts`). Point it
 somewhere else with `VITE_API_TARGET` in dev, or `VITE_API_BASE` in a build.
@@ -17,6 +62,7 @@ somewhere else with `VITE_API_TARGET` in dev, or `VITE_API_BASE` in a build.
 | Route | What it does |
 | --- | --- |
 | `GET /api/capabilities` | What this deployment can actually do. The app asks on boot and adapts. |
+| `GET /api/voices` | The account's ElevenLabs voices and their ids. Setup only. |
 | `POST /api/plan` | Reads the prompt and returns who to become, where it happens, and the arc. |
 | `POST /api/narrate` | Streams one segment of narration as SSE (`{type:"delta"}` … `{type:"done"}`). |
 | `POST /api/reflect` | Reads a finished night and returns what is worth remembering. |
