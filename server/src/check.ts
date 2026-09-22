@@ -19,12 +19,56 @@ function reason(error: unknown): string {
   return message.replace(/\s+/g, ' ').slice(0, 300)
 }
 
+/**
+ * The shape of a key, before spending a request on it.
+ *
+ * Most bad keys are bad in a visible way — a stray quote from an editor, a
+ * space from a copy that grabbed too much, a value from the wrong product —
+ * and the API answers all of them with the same opaque 401.
+ */
+function inspectKey(raw: string, label: string, prefix: string, minLength: number): boolean {
+  const value = raw
+  let sound = true
+
+  if (value !== value.trim()) {
+    bad(`${label} has whitespace around it`)
+    hint('Remove the spaces or the line break after the = sign.')
+    sound = false
+  }
+  if (/^["']|["']$/.test(value.trim())) {
+    bad(`${label} is wrapped in quotes`)
+    hint('Write it bare: KEY=value — no quotes.')
+    sound = false
+  }
+  if (/\s/.test(value.trim())) {
+    bad(`${label} contains a space or line break inside it`)
+    hint('The paste was probably broken across lines. Paste it as one line.')
+    sound = false
+  }
+  if (!value.trim().startsWith(prefix)) {
+    bad(`${label} does not start with "${prefix}"`)
+    hint(`Keys for this service look like ${prefix}…  — this may be from elsewhere.`)
+    sound = false
+  }
+  if (value.trim().length < minLength) {
+    bad(`${label} is only ${value.trim().length} characters — it looks truncated`)
+    hint('Copy the whole key; the console only shows it once.')
+    sound = false
+  }
+  return sound
+}
+
 async function checkClaude(): Promise<boolean> {
   console.log('\nNarrator — Anthropic')
   if (!claude.hasCredentials()) {
     bad('ANTHROPIC_API_KEY is not set')
     hint('Get one at console.anthropic.com, then put it in server/.env')
     hint('Without it the app writes nights with its own local engine.')
+    return false
+  }
+
+  if (!inspectKey(process.env.ANTHROPIC_API_KEY ?? '', 'ANTHROPIC_API_KEY', 'sk-ant-', 40)) {
+    hint('Create a fresh one at console.anthropic.com → API keys.')
     return false
   }
 
@@ -75,6 +119,10 @@ async function checkVoice(): Promise<boolean> {
   ok(`provider: ${provider}`)
 
   if (provider === 'elevenlabs') {
+    if (!inspectKey(process.env.ELEVENLABS_API_KEY ?? '', 'ELEVENLABS_API_KEY', 'sk_', 30)) {
+      hint('Create a fresh one at elevenlabs.io → profile → API key.')
+      return false
+    }
     try {
       const voices = await listVoices()
       ok(`${voices.length} voice(s) on the account`)
