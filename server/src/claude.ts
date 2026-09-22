@@ -15,7 +15,12 @@ import {
   buildReflectUser,
 } from './prompt.js'
 
-export const MODEL = 'claude-opus-5'
+/**
+ * Opus writes the best nights and costs the most. A night is many requests —
+ * one plan plus a segment every three minutes — so this is the single lever
+ * that moves the bill, and it belongs to whoever pays it rather than to us.
+ */
+export const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5'
 
 let client: Anthropic | null = null
 

@@ -33,9 +33,19 @@ Both are optional and the app runs without either — this is what each one buys
 3. `npm run check` — it sends one real planning request and prints the title
    and persona it came back with
 
-Without it, `ai/localEngine.ts` in the app writes the night instead: it reads
-the prompt for place, persona and feeling and composes from written banks. It
-works, in both languages, but it is not Claude.
+Credits are bought separately from the key — **Plans & Billing** in the same
+console. A valid key with an empty balance answers `400 credit balance is too
+low`, which `npm run check` reports as such.
+
+**Model.** `claude-opus-5` is the default and the best writer. A night is many
+requests — one plan, then a segment every three minutes — so the model is the
+one lever that really moves the bill; `ANTHROPIC_MODEL` switches it without a
+code change (`claude-sonnet-5` is roughly half the price and still writes
+well). Whoever pays should make that call, not the default.
+
+Without a key at all, `ai/localEngine.ts` in the app writes the night instead:
+it reads the prompt for place, persona and feeling and composes from written
+banks. It works, in both languages, but it is not Claude.
 
 ### ElevenLabs — who speaks it
 
