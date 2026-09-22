@@ -78,14 +78,34 @@ async function checkVoice(): Promise<boolean> {
     try {
       const voices = await listVoices()
       ok(`${voices.length} voice(s) on the account`)
-      const configured = process.env.ELEVENLABS_VOICE_ID
-      const match = voices.find((v) => v.id === configured)
-      if (configured && !match) {
-        bad(`ELEVENLABS_VOICE_ID ${configured} is not on this account`)
-        hint('Run `npm run voices` and copy an id from there.')
+      // Every configured id, not just the default — a wrong one only shows up
+      // when a listener happens to pick that voice, which is far too late.
+      const configured = Object.keys(process.env)
+        .filter((name) => name.startsWith('ELEVENLABS_VOICE_'))
+        .map((name) => ({ name, id: (process.env[name] ?? '').trim() }))
+        .filter((entry) => entry.id.length > 0)
+
+      if (configured.length === 0) {
+        bad('no voice id configured')
+        hint('Run `npm run voices` and set ELEVENLABS_VOICE_ID.')
         return false
       }
-      if (match) ok(`default voice: ${match.name}`)
+
+      let allFound = true
+      for (const entry of configured) {
+        const match = voices.find((v) => v.id === entry.id)
+        if (match) ok(`${entry.name} → ${match.name}`)
+        else {
+          bad(`${entry.name} (${entry.id}) is not on this account`)
+          allFound = false
+        }
+      }
+      if (!allFound) {
+        hint('Run `npm run voices` and copy ids from there.')
+        hint('A voice browsed in the library must be added to your voices first.')
+        hint('Leave the optional ones blank to fall back to ELEVENLABS_VOICE_ID.')
+        return false
+      }
     } catch (error) {
       bad(`could not list voices: ${reason(error)}`)
       return false
