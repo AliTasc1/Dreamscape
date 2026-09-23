@@ -128,6 +128,7 @@ export function useNightSession(): NightSession {
         speed: current.prefs.speed,
         intensity: current.prefs.intensity,
         tone: current.tone,
+        voice: current.prefs.voice,
       },
       () => {
         if (ended.current) return
@@ -170,6 +171,7 @@ export function useNightSession(): NightSession {
       speed: app.prefs.speed,
       intensity: app.prefs.intensity,
       tone: app.tone,
+      voice: app.prefs.voice,
     })
   }, [app.lang, app.prefs, app.tone])
 

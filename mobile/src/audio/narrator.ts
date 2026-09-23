@@ -1,30 +1,29 @@
 import * as Speech from 'expo-speech'
-import type { LanguageId } from '../i18n'
-import type { ToneId } from '../shared/ai/contracts'
+import type { LanguageId, ToneId } from '../shared/ai/contracts'
+import { segment, stripMarkers } from '../shared/audio/pacing'
+
+export { segment, stripMarkers }
 
 /**
  * The voice, on the device.
  *
  * `expo-speech` is the phone's own text-to-speech: free, offline, no account,
- * no per-character cost, and available in Expo Go. It is plainer than a hosted
- * voice, and it is the only kind that can run for an hour a night at no charge.
+ * no per-character cost, and available in Expo Go. Two things are done here to
+ * make it sound less like a machine reading a sign, and it is worth being
+ * honest that neither turns it into a person.
  *
- * The performance markers the narrator writes — [breathes], [laughs] — are not
- * spoken by a device engine, so they are lifted out and their pauses kept as
- * punctuation.
+ * The first is choosing the voice. Phones ship a small, flat voice and keep
+ * the good one behind a download, and an app that does not ask gets the flat
+ * one. `bestVoice` looks through everything installed and takes the highest
+ * grade available for the language.
+ *
+ * The second is pacing. A device engine given a paragraph reads it as one
+ * breathless run. Given a sentence at a time, with real silence in between,
+ * the same engine sounds like someone speaking slowly — which is most of what
+ * "calm" is. The narrator's markers become those silences: [breathes] is a
+ * long one, [pause] a medium one. A device engine cannot laugh, and pretending
+ * otherwise by leaving "[laughs]" in the text would have it read the word.
  */
-
-const MARKER = /\[([a-z ]+)\]/gi
-
-export function stripMarkers(text: string): string {
-  return text
-    .replace(MARKER, (_m, name: string) =>
-      name.trim().toLowerCase().includes('pause') ? '…' : '',
-    )
-    .replace(/[ \t]{2,}/g, ' ')
-    .replace(/\s+([,.!?…])/g, '$1')
-    .trim()
-}
 
 /** Words per minute assumed when the engine gives no timing back. */
 const WPM: Record<string, number> = { verySlow: 75, slow: 95, normal: 120 }
@@ -32,7 +31,76 @@ const RATE: Record<string, number> = { verySlow: 0.62, slow: 0.78, normal: 0.94 
 
 function readingMs(text: string, speed: string): number {
   const words = text.trim().split(/\s+/).length
-  return Math.max(1500, (words / (WPM[speed] ?? WPM.slow)) * 60_000)
+  return Math.max(1200, (words / (WPM[speed] ?? WPM.slow)) * 60_000)
+}
+
+// ------------------------------------------------------------- picking a voice
+
+/**
+ * Apple grades its voices in the identifier and Google in the name. Higher is
+ * better, and the difference between the bottom and the top of this list is
+ * most of the difference between "robotic" and "acceptable".
+ */
+function grade(voice: Speech.Voice): number {
+  const id = `${voice.identifier} ${voice.name}`.toLowerCase()
+  if (id.includes('premium')) return 4
+  if (id.includes('enhanced') || voice.quality === Speech.VoiceQuality.Enhanced) return 3
+  if (id.includes('neural') || id.includes('siri')) return 3
+  if (id.includes('network')) return 2
+  if (id.includes('compact') || id.includes('eloquence')) return 0
+  return 1
+}
+
+/** Names the platforms use for voices that read as female or male. */
+const FEMININE = /yelda|samantha|karen|moira|tessa|fiona|serena|allison|ava|zoe|female|#f|-f-/i
+const MASCULINE = /alex|daniel|fred|oliver|thomas|aaron|arthur|male|#m|-m-/i
+
+function matchesPreference(voice: Speech.Voice, preference: string): boolean {
+  const id = `${voice.identifier} ${voice.name}`
+  if (preference === 'female') return FEMININE.test(id)
+  if (preference === 'male' || preference === 'deep') return MASCULINE.test(id)
+  return false
+}
+
+let cache: { key: string; identifier: string | undefined } | null = null
+
+/**
+ * The best voice installed for this language, preferring one that matches the
+ * listener's choice when the grade is equal. Returns undefined when nothing
+ * can be decided, which leaves the system default — the same as before.
+ */
+async function bestVoice(lang: LanguageId, preference: string): Promise<string | undefined> {
+  const key = `${lang}:${preference}`
+  if (cache?.key === key) return cache.identifier
+
+  let identifier: string | undefined
+  try {
+    const all = await Speech.getAvailableVoicesAsync()
+    const wanted = lang === 'tr' ? 'tr' : 'en'
+    const candidates = all.filter((voice) => voice.language?.toLowerCase().startsWith(wanted))
+    // An English listener is better served by en-US or en-GB than by en-IN.
+    const preferred = candidates.filter((voice) =>
+      lang === 'en' ? /^en[-_](us|gb)/i.test(voice.language) : true,
+    )
+    const pool = preferred.length > 0 ? preferred : candidates
+
+    let best: Speech.Voice | undefined
+    let bestScore = -1
+    for (const voice of pool) {
+      const score = grade(voice) * 2 + (matchesPreference(voice, preference) ? 1 : 0)
+      if (score > bestScore) {
+        bestScore = score
+        best = voice
+      }
+    }
+    identifier = best?.identifier
+  } catch {
+    // Some runtimes have no voice list at all; the default still speaks.
+    identifier = undefined
+  }
+
+  cache = { key, identifier }
+  return identifier
 }
 
 export interface VoiceOptions {
@@ -40,6 +108,8 @@ export interface VoiceOptions {
   speed: string
   intensity: string
   tone: ToneId
+  /** The listener's voice preference, used to pick between equal voices. */
+  voice: string
 }
 
 export class Narrator {
@@ -119,13 +189,28 @@ export class Narrator {
     if (!this.stopped) void this.pump()
   }
 
-  private say(paragraph: string): Promise<void> {
-    const text = stripMarkers(paragraph)
-    if (!text) return Promise.resolve()
+  /** Speaks a paragraph a sentence at a time, resting where it should. */
+  private async say(paragraph: string): Promise<void> {
+    const parts = segment(paragraph, this.options.speed)
+    if (parts.length === 0) return
 
+    if (this.muted) {
+      await this.wait(readingMs(stripMarkers(paragraph), this.options.speed))
+      return
+    }
+
+    const voice = await bestVoice(this.options.lang, this.options.voice)
+
+    for (const part of parts) {
+      if (this.stopped) return
+      if (part.text) await this.utter(part.text, voice)
+      if (this.stopped) return
+      if (part.restMs > 0) await this.wait(part.restMs)
+    }
+  }
+
+  private utter(text: string, voice: string | undefined): Promise<void> {
     const minimum = readingMs(text, this.options.speed)
-
-    if (this.muted) return this.wait(minimum)
 
     return new Promise<void>((resolve) => {
       let settled = false
@@ -136,7 +221,7 @@ export class Narrator {
       }
 
       // An engine that never calls back cannot hold the night open.
-      const watchdog = setTimeout(finish, minimum * 2 + 12_000)
+      const watchdog = setTimeout(finish, minimum * 2 + 8_000)
       const done = () => {
         clearTimeout(watchdog)
         finish()
@@ -145,8 +230,11 @@ export class Narrator {
       try {
         Speech.speak(text, {
           language: this.options.lang === 'tr' ? 'tr-TR' : 'en-US',
+          voice,
           rate: RATE[this.options.speed] ?? RATE.slow,
-          pitch: this.options.intensity === 'whisper' ? 0.85 : 0.95,
+          // A whisper is mostly quieter and a little lower, not a cartoon.
+          pitch: this.options.intensity === 'whisper' ? 0.94 : 1,
+          volume: this.options.intensity === 'whisper' ? 0.7 : 1,
           onDone: done,
           onStopped: done,
           onError: done,
