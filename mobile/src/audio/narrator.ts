@@ -1,6 +1,7 @@
 import * as Speech from 'expo-speech'
 import type { LanguageId, ToneId } from '../shared/ai/contracts'
 import { segment, stripMarkers } from '../shared/audio/pacing'
+import { RemoteVoice } from './remoteVoice'
 
 export { segment, stripMarkers }
 
@@ -112,18 +113,38 @@ export interface VoiceOptions {
   voice: string
 }
 
+/** A hosted voice to prefer, when one is configured and reachable. */
+export interface RemoteConfig {
+  base: string
+}
+
 export class Narrator {
   private queue: string[] = []
   private speaking = false
   private stopped = false
   private muted = false
   private cancelWait: (() => void) | null = null
+  private readonly remote: RemoteVoice | null
 
   constructor(
     private options: VoiceOptions,
     private onDrain: () => void,
     private onSpeak: (text: string) => void,
-  ) {}
+    remote?: RemoteConfig,
+  ) {
+    this.remote = remote?.base ? new RemoteVoice(remote.base) : null
+  }
+
+  /** What the hosted voice needs to know, apart from the words themselves. */
+  private request() {
+    return {
+      lang: this.options.lang,
+      voice: this.options.voice,
+      intensity: this.options.intensity,
+      speed: this.options.speed,
+      tone: this.options.tone,
+    }
+  }
 
   setOptions(options: VoiceOptions): void {
     this.options = options
@@ -137,25 +158,33 @@ export class Narrator {
     const text = paragraph.trim()
     if (!text) return
     this.queue.push(text)
+    // Start fetching its audio now, so the wait is spent listening to the
+    // paragraph before it rather than in silence.
+    if (!this.muted) this.remote?.prefetch(text, this.request())
     void this.pump()
   }
 
   clearQueue(): void {
     this.queue = []
     void Speech.stop()
+    this.remote?.clear()
     this.cancelWait?.()
   }
 
   /** Silent, but the words keep moving at reading pace. */
   setMuted(muted: boolean): void {
     this.muted = muted
-    if (muted) void Speech.stop()
+    if (muted) {
+      void Speech.stop()
+      this.remote?.stop()
+    }
   }
 
   pause(): void {
     // iOS supports pause/resume; Android stops instead, which the queue
     // recovers from on the next paragraph.
     void Speech.pause().catch(() => Speech.stop())
+    this.remote?.stop()
   }
 
   resume(): void {
@@ -167,6 +196,7 @@ export class Narrator {
     this.stopped = true
     this.queue = []
     void Speech.stop()
+    this.remote?.clear()
     this.cancelWait?.()
   }
 
@@ -189,7 +219,14 @@ export class Narrator {
     if (!this.stopped) void this.pump()
   }
 
-  /** Speaks a paragraph a sentence at a time, resting where it should. */
+  /**
+   * Speaks a paragraph.
+   *
+   * A hosted voice gets the whole paragraph with its markers, because it can
+   * perform them and because it phrases better with the context. The device
+   * voice gets it a sentence at a time with silences in between, because that
+   * is the only pacing it has.
+   */
   private async say(paragraph: string): Promise<void> {
     const parts = segment(paragraph, this.options.speed)
     if (parts.length === 0) return
@@ -198,6 +235,17 @@ export class Narrator {
       await this.wait(readingMs(stripMarkers(paragraph), this.options.speed))
       return
     }
+
+    if (this.remote?.usable) {
+      const uri = await this.remote.take(paragraph, this.request())
+      if (this.stopped) return
+      if (uri) {
+        const volume = this.options.intensity === 'whisper' ? 0.75 : 1
+        if (await this.remote.speak(uri, volume)) return
+      }
+      // Anything else and the device reads it instead, without a word said.
+    }
+    if (this.stopped) return
 
     const voice = await bestVoice(this.options.lang, this.options.voice)
 

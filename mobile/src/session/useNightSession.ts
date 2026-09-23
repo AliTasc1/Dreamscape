@@ -140,6 +140,9 @@ export function useNightSession(): NightSession {
         setLine(clean)
         pushTurn('companion', clean)
       },
+      // A hosted voice, only when this deployment actually has one. Without
+      // it the phone reads the night itself, exactly as before.
+      current.caps.voice === 'none' ? undefined : { base: ai.apiBase() },
     )
     narrator.current = instance
 

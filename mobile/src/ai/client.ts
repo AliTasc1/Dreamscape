@@ -47,6 +47,11 @@ function safeBase(raw: string): string {
 
 const BASE = safeBase(process.env.EXPO_PUBLIC_API_BASE ?? '')
 
+/** The server this app talks to, or '' when it writes its own nights. */
+export function apiBase(): string {
+  return BASE
+}
+
 export const OFFLINE: Capabilities = { narrator: 'none', voice: 'none', model: null }
 
 /** A server's answer is not trusted any more than a client's request is. */

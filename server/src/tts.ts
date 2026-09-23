@@ -57,6 +57,52 @@ function stripMarkers(text: string): { clean: string; markers: string[] } {
   return { clean, markers: [...new Set(markers)] }
 }
 
+/**
+ * Translates the narrator's markers into tags Eleven v3 actually knows.
+ *
+ * The model performs the tags it recognises and reads the ones it does not
+ * out loud — so a night written with "[long pause]" in it would have the
+ * voice say the words "long pause". Anything without a home becomes silence
+ * or punctuation, which is always safe.
+ *
+ * https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices
+ */
+const ELEVEN_TAGS: Record<string, string> = {
+  breathes: '[exhales]',
+  breathe: '[exhales]',
+  exhales: '[exhales]',
+  sighs: '[sighs]',
+  sigh: '[sighs]',
+  whispers: '[whispers]',
+  whisper: '[whispers]',
+  laughs: '[laughs]',
+  laugh: '[laughs]',
+  chuckles: '[laughs]',
+  chuckle: '[laughs]',
+  gasps: '[gasps]',
+  // Pauses are punctuation to this model, not a tag.
+  pause: '…',
+  pauses: '…',
+  'long pause': '… …',
+  // Directions with no tag of their own are carried by the voice settings.
+  softly: '',
+  soft: '',
+  quietly: '',
+}
+
+export function forEleven(text: string): string {
+  return text
+    .replace(/\[([a-z ]+)\]/gi, (_match, name: string) => {
+      const marker = name.trim().toLowerCase()
+      const mapped = ELEVEN_TAGS[marker]
+      // An unknown marker is dropped rather than risked.
+      return mapped ?? ''
+    })
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\s+([,.!?])/g, '$1')
+    .trim()
+}
+
 function openAiInstructions(req: TtsRequest, markers: string[]): string {
   const parts = [
     req.tone === 'mature'
@@ -143,9 +189,10 @@ export async function synthesize(req: TtsRequest): Promise<ArrayBuffer> {
     if (!voiceId) throw new Error('no ElevenLabs voice configured')
     const model = process.env.ELEVENLABS_MODEL || 'eleven_v3'
 
-    // v3 reads the inline markers, so the text goes through untouched.
+    // v3 performs the markers it knows and reads aloud the ones it does not.
+    const text = forEleven(req.text)
     let response = await elevenSpeak(voiceId, {
-      text: req.text,
+      text,
       model_id: model,
       ...(process.env.ELEVENLABS_SEND_LANGUAGE === 'true' ? { language_code: req.lang } : null),
       voice_settings: elevenSettings(req),
@@ -155,7 +202,7 @@ export async function synthesize(req: TtsRequest): Promise<ArrayBuffer> {
       const detail = await response.text()
       console.warn(`[dreamscape] ElevenLabs ${response.status} (${detail.slice(0, 200)})`)
       console.warn('[dreamscape] retrying without the optional voice settings')
-      response = await elevenSpeak(voiceId, { text: req.text, model_id: model })
+      response = await elevenSpeak(voiceId, { text, model_id: model })
     }
 
     if (!response.ok) {
