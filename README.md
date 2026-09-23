@@ -1,25 +1,68 @@
-# CODING AGENTS: READ THIS FIRST
+# Dreamscape
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Describe a world in a sentence and fall asleep inside it, narrated by a
+companion who becomes whoever you asked for.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+> "Ormanın derinliklerindeyim, babam gibi konuşup öğüt veriyorsun ve beni
+> sakinleştiriyorsun."
 
-## What you should do — IMPORTANT
+That sentence produces a father in a forest — not a narrator describing one —
+speaking Turkish, for thirty minutes, remembering what you told it last time.
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+## The four projects
 
-**Read `project/Dreamscape.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+| | What it is | Needs a key |
+| --- | --- | --- |
+| [`app/`](app) | The web app — React, Vite, TypeScript | no |
+| [`mobile/`](mobile) | The iPhone and Android app — Expo, React Native | no |
+| [`server/`](server) | Writes the night with Claude, speaks it with ElevenLabs | yes, to be used at all |
+| [`tests/`](tests) | One suite across all three | no |
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+Each has its own README. Start with [`mobile/README.md`](mobile/README.md) to
+put it on a phone, or [`app/README.md`](app/README.md) for the browser.
 
-## About the design files
+## It runs without a single key
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+The server is optional. With no keys anywhere:
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+- the night is **written** by an offline engine that genuinely reads the prompt
+  for place, person and feeling and writes from that, in the right language;
+- it is **spoken** by the device — `expo-speech` on a phone, the browser's own
+  speech synthesis on the web;
+- the **ambience** is synthesised rather than downloaded — rain, ocean, fire,
+  wind, forest, night and café, generated as seamless loops on the device;
+- the **artwork** is SVG, drawn at whatever size it is given.
 
-## Bundle contents
+Set `ANTHROPIC_API_KEY` and the night is written by Claude instead. Set
+`ELEVENLABS_API_KEY` and it is read by a voice that breathes and laughs. Both
+are upgrades to something that already works.
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Dreamscape prototip hazır` project files (HTML prototypes, assets, components)
+## The one outside service
+
+| What | Who | Key | CORS | Why |
+| --- | --- | --- | --- | --- |
+| Weather, sunrise, sunset | [Open-Meteo](https://open-meteo.com/) | none | yes | So "it is raining outside" is true rather than decorative |
+
+Off by default. Turning it on asks for coarse location once and rounds the
+coordinate to two decimals — about a kilometre — before it leaves the device.
+Free for non-commercial use; read their terms before charging for this.
+
+## Running the tests
+
+```bash
+cd server && npm install && npm run build   # the integration tests run the real build
+cd ../tests && npm install && npm test
+```
+
+Eighty-one tests across four files: the weather reader against real and broken
+responses, the server's input validation, the server itself over a socket
+(path traversal, rate limiting, what it does and does not say in an error), the
+offline narrator, and a drift check that fails the moment the copied modules
+stop matching each other.
+
+## Where this came from
+
+A design mocked up in [Claude Design](https://claude.ai/design) and exported as
+a handoff bundle. The original prototype is still here, unchanged, in
+[`project/Dreamscape.dc.html`](project/Dreamscape.dc.html), and the conversation
+that produced it is in [`chats/`](chats). The apps were built from those.

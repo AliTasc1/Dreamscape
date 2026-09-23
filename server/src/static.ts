@@ -57,8 +57,18 @@ async function fileAt(path: string): Promise<string | null> {
  * nothing to serve and the caller should 404.
  */
 export async function serveStatic(pathname: string, res: ServerResponse): Promise<boolean> {
-  // Strip the leading slash and any traversal before joining.
-  const requested = normalize(decodeURIComponent(pathname)).replace(/^([/\\])+/, '')
+  // Strip the leading slash and any traversal before joining. A malformed
+  // escape like `/%ZZ` makes decodeURIComponent throw, and a null byte can
+  // truncate a path inside the OS — neither is a file, so neither is served.
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(pathname)
+  } catch {
+    return false
+  }
+  if (decoded.includes('\u0000')) return false
+
+  const requested = normalize(decoded).replace(/^([/\\])+/, '')
   const candidate = join(STATIC_DIR, requested)
   if (candidate !== STATIC_DIR && !candidate.startsWith(STATIC_DIR + sep)) return false
 

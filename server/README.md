@@ -90,8 +90,40 @@ somewhere else with `VITE_API_TARGET` in dev, or `VITE_API_BASE` in a build.
 | `POST /api/reflect` | Reads a finished night and returns what is worth remembering. |
 | `POST /api/tts` | Returns MP3 for one paragraph. |
 
-The wire types are in `src/contracts.ts`; an identical copy lives at
-`app/src/ai/contracts.ts`. Two deployables, one shape — change one, change both.
+The wire types are in `src/contracts.ts`; identical copies live at
+`app/src/ai/contracts.ts` and `mobile/src/shared/ai/contracts.ts`. Three
+deployables, one shape — `tests/drift.test.ts` fails if they stop matching.
+
+## Before this is on a public address
+
+This service holds your Anthropic and ElevenLabs keys, so a request to it is
+not just data — it is a bill. Three things are already done for you:
+
+- **Nothing over the wire is believed.** `src/validate.ts` checks every field
+  and clamps it to something a real night could contain: `minutes` to 120, a
+  prompt to 4,000 characters, an arc to 40 beats, memory to 40 entries a list.
+  Every preference id is narrowed to one the app actually offers — which is
+  also what stops a caller choosing which `ELEVENLABS_VOICE_*` variable gets
+  read. Anything that cannot be repaired is a `400` naming the field.
+- **There is a per-address budget**, 40 requests a minute by default. Tune it
+  with `RATE_MAX` and `RATE_WINDOW_MS`; behind a proxy set `TRUST_PROXY=1` so
+  it counts the real caller.
+- **Errors say nothing about the server.** An upstream message can carry a URL,
+  a header or a fragment of a key, so it is logged and never returned — the app
+  only needs to know whether to retry or write the night itself.
+
+Two things are still yours to do:
+
+- **Set `CORS_ORIGIN`.** It defaults to `*`, which is right on your own machine
+  and wrong on a public address: with `*` and no authentication, any website
+  can drive your keys.
+- **Put it behind something.** There is no login here. On a public URL, anyone
+  who finds it can spend your credit at 40 requests a minute. A tunnel you
+  share with two people is fine; a permanent public address wants an
+  authenticating proxy in front of it.
+
+`tests/server.test.ts` starts this build with no keys, plants a secret file
+above the static root and tries twelve ways of reaching it.
 
 ## Running without keys
 

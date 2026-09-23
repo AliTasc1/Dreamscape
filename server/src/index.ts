@@ -2,16 +2,52 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import * as claude from './claude.js'
 import { hasBuild, serveStatic, STATIC_DIR } from './static.js'
 import { listVoices, synthesize, voiceProvider } from './tts.js'
-import type {
-  Capabilities,
-  NarrateRequest,
-  PlanRequest,
-  ReflectRequest,
-  TtsRequest,
-} from './contracts.js'
+import * as validate from './validate.js'
+import { BadRequestError } from './validate.js'
+import type { Capabilities } from './contracts.js'
 
 const PORT = Number(process.env.PORT ?? 8787)
 const MAX_BODY = 512 * 1024
+
+/** Every path that accepts a POST. Anything else is a 404, not a hint. */
+const POST_ROUTES = new Set(['/api/plan', '/api/reflect', '/api/narrate', '/api/tts'])
+
+/**
+ * A plain per-address budget.
+ *
+ * This service spends the operator's money on every request, so an open port
+ * is an open wallet. One window per address, counted in memory: it resets when
+ * the process does, which is the right trade for a single small service.
+ * Behind a proxy, set TRUST_PROXY=1 so the count follows the real caller.
+ */
+const RATE_WINDOW_MS = Number(process.env.RATE_WINDOW_MS ?? 60_000)
+const RATE_MAX = Number(process.env.RATE_MAX ?? 40)
+const seen = new Map<string, { count: number; until: number }>()
+
+function callerOf(req: IncomingMessage): string {
+  if (process.env.TRUST_PROXY === '1') {
+    const forwarded = req.headers['x-forwarded-for']
+    const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(',')[0]?.trim()
+    if (first) return first
+  }
+  return req.socket.remoteAddress ?? 'unknown'
+}
+
+function overBudget(req: IncomingMessage): boolean {
+  const now = Date.now()
+  // Cheap sweep so a long-lived process does not remember every caller.
+  if (seen.size > 5_000) {
+    for (const [key, row] of seen) if (row.until <= now) seen.delete(key)
+  }
+  const key = callerOf(req)
+  const row = seen.get(key)
+  if (!row || row.until <= now) {
+    seen.set(key, { count: 1, until: now + RATE_WINDOW_MS })
+    return false
+  }
+  row.count += 1
+  return row.count > RATE_MAX
+}
 
 function cors(res: ServerResponse): void {
   res.setHeader('access-control-allow-origin', process.env.CORS_ORIGIN ?? '*')
@@ -28,7 +64,7 @@ function json(res: ServerResponse, status: number, body: unknown): void {
   res.end(payload)
 }
 
-async function readBody<T>(req: IncomingMessage): Promise<T> {
+async function readBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = []
   let size = 0
   for await (const chunk of req) {
@@ -36,17 +72,29 @@ async function readBody<T>(req: IncomingMessage): Promise<T> {
     if (size > MAX_BODY) throw new Error('request body too large')
     chunks.push(chunk as Buffer)
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8')) as T
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown
+  } catch {
+    throw new BadRequestError('body')
+  }
 }
 
-/** Turns an unknown throw into something the app can act on. */
+/**
+ * Turns an unknown throw into something the app can act on.
+ *
+ * The detail is logged, never returned: an upstream message can carry a URL,
+ * a header or a fragment of a key, and the app only needs to know whether to
+ * retry or to fall back to writing the night itself.
+ */
 function failure(error: unknown): { status: number; body: Record<string, unknown> } {
   if (error instanceof claude.RefusedError) {
     return { status: 422, body: { error: 'refused', category: error.category } }
   }
-  const message = error instanceof Error ? error.message : String(error)
-  console.error('[dreamscape]', message)
-  return { status: 502, body: { error: 'upstream', message } }
+  if (error instanceof BadRequestError) {
+    return { status: 400, body: { error: 'bad_request', field: error.field } }
+  }
+  console.error('[dreamscape]', error instanceof Error ? error.message : String(error))
+  return { status: 502, body: { error: 'upstream' } }
 }
 
 function capabilities(): Capabilities {
@@ -66,7 +114,13 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     return
   }
 
-  const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`)
+  let url: URL
+  try {
+    url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`)
+  } catch {
+    json(res, 400, { error: 'bad_request', field: 'url' })
+    return
+  }
 
   if (url.pathname === '/api/capabilities') {
     json(res, 200, capabilities())
@@ -100,6 +154,18 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     return
   }
 
+  if (overBudget(req)) {
+    res.setHeader('retry-after', String(Math.ceil(RATE_WINDOW_MS / 1000)))
+    json(res, 429, { error: 'too_many_requests' })
+    return
+  }
+
+  // An unknown route is a 404 whatever else is or is not configured.
+  if (!POST_ROUTES.has(url.pathname)) {
+    json(res, 404, { error: 'not_found' })
+    return
+  }
+
   // Everything below needs a narrator; say so plainly instead of failing oddly.
   const needsClaude = url.pathname !== '/api/tts'
   if (needsClaude && !claude.hasCredentials()) {
@@ -110,17 +176,17 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   try {
     switch (url.pathname) {
       case '/api/plan': {
-        json(res, 200, await claude.plan(await readBody<PlanRequest>(req)))
+        json(res, 200, await claude.plan(validate.planRequest(await readBody(req))))
         return
       }
 
       case '/api/reflect': {
-        json(res, 200, await claude.reflect(await readBody<ReflectRequest>(req)))
+        json(res, 200, await claude.reflect(validate.reflectRequest(await readBody(req))))
         return
       }
 
       case '/api/narrate': {
-        const body = await readBody<NarrateRequest>(req)
+        const body = validate.narrateRequest(await readBody(req))
         res.writeHead(200, {
           'content-type': 'text/event-stream; charset=utf-8',
           'cache-control': 'no-cache, no-transform',
@@ -144,7 +210,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
           json(res, 503, { error: 'not_configured', what: 'voice' })
           return
         }
-        const audio = await synthesize(await readBody<TtsRequest>(req))
+        const audio = await synthesize(validate.ttsRequest(await readBody(req)))
         res.writeHead(200, {
           'content-type': 'audio/mpeg',
           'content-length': audio.byteLength,

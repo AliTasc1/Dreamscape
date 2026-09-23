@@ -1,0 +1,12 @@
+{
+  "name": "dreamscape-tests",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test": "tsc && node --test \"dist/tests/*.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.6.3"
+  }
+}

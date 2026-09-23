@@ -33,13 +33,24 @@ async function postJson<T>(path: string, body: unknown, signal?: AbortSignal): P
   return (await response.json()) as T
 }
 
+/** A server's answer is not trusted any more than a client's request is. */
+function readCapabilities(payload: unknown): Capabilities {
+  if (!payload || typeof payload !== 'object') return OFFLINE
+  const raw = payload as Record<string, unknown>
+  return {
+    narrator: raw.narrator === 'claude' ? 'claude' : 'none',
+    voice: raw.voice === 'elevenlabs' ? 'elevenlabs' : raw.voice === 'openai' ? 'openai' : 'none',
+    model: typeof raw.model === 'string' ? raw.model.slice(0, 80) : null,
+  }
+}
+
 export async function fetchCapabilities(): Promise<Capabilities> {
   try {
     const response = await fetch(url('/api/capabilities'), {
       signal: AbortSignal.timeout(4000),
     })
     if (!response.ok) return OFFLINE
-    return (await response.json()) as Capabilities
+    return readCapabilities(await response.json())
   } catch {
     return OFFLINE
   }
