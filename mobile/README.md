@@ -19,38 +19,47 @@ npm run export     # bundles both platforms, the way a store build would
 3. Scan the QR code the terminal prints — iPhone with the Camera app, Android
    from inside Expo Go.
 
-If the phone is not on the same Wi-Fi as the computer, start it with
-`npx expo start --tunnel` and share the resulting link. The tunnel works
-between cities, but only while that terminal is open.
-
-Nothing needs an API key. Expo Go will load the app, write the night on the
-phone and read it aloud with the system voice.
+Nothing needs an account and nothing needs an API key. Expo Go loads the app,
+the phone writes the night and the phone's own voice reads it.
 
 ## Giving somebody else the app
 
 ```bash
-npm install -g eas-cli
-eas login
-eas init            # writes the real projectId into app.json, once
-npm run share       # publishes, and prints a link
+npm run share
 ```
 
-The link opens in their Expo Go and keeps working with your computer switched
-off, because the bundle is on Expo's servers rather than yours. Republishing
-with `npm run share` gives them the new version the next time they open it —
-the link never changes.
+That is `expo start --tunnel` with two things added. It serves the app from a
+public address instead of the local network, so the person you send it to can
+be in another city; and it pins the tunnel's subdomain, so the link is the same
+every time you run it rather than a fresh random one that leaves whoever you
+gave the last one to holding a dead address.
 
-This works because `runtimeVersion` is `{"policy": "sdkVersion"}`. Expo Go can
-only run the SDK it was built with, so an update pinned to a version of *this
-app* would refuse to load there; pinned to the SDK, it loads. Change that and
-the link stops opening in Expo Go.
+Send them the `exp://…exp.direct` line the terminal prints. They open it in
+Expo Go and that is all — no account, no login, no sign-up, on either side.
 
-What they get is the free app: the night written on their phone and read by
-their phone's voice. `EXPO_PUBLIC_API_BASE` is compiled into the bundle, so a
-hosted narrator or voice would have to be a public HTTPS address that is up
-whenever they are — and this server has no authentication, so a public address
-is an open wallet. Keep the hosted voice for your own machine until there is a
-real deployment behind a login.
+**The window has to stay open.** The app is served from your computer, so when
+you close the terminal or shut down, their copy stops loading. That is the one
+real cost of this route, and for a person who wants to fall asleep to it after
+you have gone to bed it is the wrong one. `npm run publish` is the other route:
+it puts the bundle on Expo's servers with `eas update`, so the link keeps
+working with your computer off — but that one does need an Expo account, and
+`runtimeVersion` is already set to `{"policy": "sdkVersion"}` so the result
+still opens in Expo Go.
+
+If the tunnel ever refuses the subdomain because somebody else took it, set
+`EXPO_TUNNEL_SUBDOMAIN` to something else, or to an empty string for a random
+one.
+
+What they get either way is the free app: the night written on their phone and
+read by their phone's voice. `EXPO_PUBLIC_API_BASE` is compiled into the
+bundle, so a hosted narrator or voice would have to be a public HTTPS address
+that is up whenever they are — and this server has no authentication, so a
+public address is an open wallet. Keep the hosted voice on your own machine
+until there is a real deployment behind a login.
+
+Tell them to download their phone's good voice, too. iOS keeps it in Settings →
+Accessibility → Spoken Content → Voices; Android in Settings → System →
+Languages → Text-to-speech. Without it the app is stuck with the flat one.
 
 ## What it costs to run: nothing
 
