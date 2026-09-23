@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "scheme": "dreamscape",
     "userInterfaceStyle": "dark",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "backgroundColor": "#05070F",
     "icon": "./assets/icon.png",
     "splash": {
@@ -13,13 +16,17 @@
       "resizeMode": "contain",
       "backgroundColor": "#05070F"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.alitasci.dreamscape",
       "buildNumber": "1",
       "infoPlist": {
-        "UIBackgroundModes": ["audio"],
+        "UIBackgroundModes": [
+          "audio"
+        ],
         "NSLocationWhenInUseUsageDescription": "Dreamscape can match tonight to the real weather and sunset where you are. This is optional and your location never leaves the app except as a rounded coordinate sent to a public weather service.",
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -31,8 +38,13 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#05070F"
       },
-      "permissions": ["ACCESS_COARSE_LOCATION"],
-      "blockedPermissions": ["ACCESS_FINE_LOCATION", "RECORD_AUDIO"],
+      "permissions": [
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "ACCESS_FINE_LOCATION",
+        "RECORD_AUDIO"
+      ],
       "edgeToEdgeEnabled": true
     },
     "plugins": [

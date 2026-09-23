@@ -21,10 +21,36 @@ npm run export     # bundles both platforms, the way a store build would
 
 If the phone is not on the same Wi-Fi as the computer, start it with
 `npx expo start --tunnel` and share the resulting link. The tunnel works
-between cities; the QR code alone does not.
+between cities, but only while that terminal is open.
 
 Nothing needs an API key. Expo Go will load the app, write the night on the
 phone and read it aloud with the system voice.
+
+## Giving somebody else the app
+
+```bash
+npm install -g eas-cli
+eas login
+eas init            # writes the real projectId into app.json, once
+npm run share       # publishes, and prints a link
+```
+
+The link opens in their Expo Go and keeps working with your computer switched
+off, because the bundle is on Expo's servers rather than yours. Republishing
+with `npm run share` gives them the new version the next time they open it —
+the link never changes.
+
+This works because `runtimeVersion` is `{"policy": "sdkVersion"}`. Expo Go can
+only run the SDK it was built with, so an update pinned to a version of *this
+app* would refuse to load there; pinned to the SDK, it loads. Change that and
+the link stops opening in Expo Go.
+
+What they get is the free app: the night written on their phone and read by
+their phone's voice. `EXPO_PUBLIC_API_BASE` is compiled into the bundle, so a
+hosted narrator or voice would have to be a public HTTPS address that is up
+whenever they are — and this server has no authentication, so a public address
+is an open wallet. Keep the hosted voice for your own machine until there is a
+real deployment behind a login.
 
 ## What it costs to run: nothing
 
