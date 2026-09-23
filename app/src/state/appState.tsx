@@ -18,6 +18,7 @@ import {
   type OptionKey,
   type ThemeId,
 } from '../domain/options'
+import { describeSky, readSky, type SkyReading } from '../env/sky'
 import { preferredLanguage, type LanguageId } from '../i18n'
 import type { Screen } from '../types'
 import { forget, isMemoryEmpty, rememberNight, type MemoryBucket } from './memory'
@@ -80,6 +81,8 @@ interface Ephemeral {
   ambienceLevel: number
   reflection: Reflection | null
   transcript: string
+  /** The last weather reading, when the listener asked for one. */
+  sky: SkyReading | null
   toast: string | null
 }
 
@@ -107,6 +110,7 @@ const INITIAL_EPHEMERAL: Ephemeral = {
   ambienceLevel: 0.62,
   reflection: null,
   transcript: '',
+  sky: null,
   toast: null,
 }
 
@@ -117,6 +121,8 @@ interface Store extends Ephemeral, Omit<Persisted, 'lang' | 'tone'> {
   showNav: boolean
   maxMinutes: number
   memoryEmpty: boolean
+  /** The real weather in one sentence, or undefined when it was never read. */
+  skyLine: string | undefined
 
   go: (screen: Screen) => void
   chooseLanguage: (lang: LanguageId) => void
@@ -160,6 +166,7 @@ interface Store extends Ephemeral, Omit<Persisted, 'lang' | 'tone'> {
   purchasePremium: () => void
   cancelPremium: () => void
   toggleNotif: (key: string) => void
+  setUseRealSky: (on: boolean) => void
   forgetMemory: (bucket: MemoryBucket, text: string) => void
   forgetAllMemory: () => void
   deleteEverything: () => void
@@ -320,11 +327,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
           tone: p.tone ?? 'gentle',
           prefs: p.prefs,
           memory: p.memory,
+          sky: s.sky ? describeSky(s.sky, p.lang ?? preferredLanguage()) : undefined,
         },
         capsRef.current,
       )
       if (run !== planRun.current) return
-      setState((prev) => ({ ...prev, planning: false, plan }))
+      setState((prev) => ({
+        ...prev,
+        planning: false,
+        // A real sky, when the listener allowed one, beats a guessed one.
+        plan: prev.sky ? { ...plan, ambience: prev.sky.ambience } : plan,
+      }))
     } catch {
       if (run !== planRun.current) return
       setState((prev) => ({ ...prev, planning: false, planError: true }))
@@ -507,6 +520,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toggleNotif: (key: string) =>
         setPersisted((p) => ({ ...p, notifOn: { ...p.notifOn, [key]: !p.notifOn[key] } })),
 
+      /**
+       * Opt-in, and it stays off if the browser says no. Turning it off forgets
+       * the reading immediately rather than waiting for the next night.
+       */
+      setUseRealSky: (on: boolean) => {
+        setPersisted((p) => ({ ...p, useRealSky: on }))
+        if (!on) {
+          setState((s) => ({ ...s, sky: null }))
+          return
+        }
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+          setPersisted((p) => ({ ...p, useRealSky: false }))
+          return
+        }
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            void readSky(position.coords.latitude, position.coords.longitude).then((sky) => {
+              if (sky) setState((s) => ({ ...s, sky }))
+              else setPersisted((p) => ({ ...p, useRealSky: false }))
+            })
+          },
+          () => setPersisted((p) => ({ ...p, useRealSky: false })),
+          { enableHighAccuracy: false, maximumAge: 30 * 60 * 1000, timeout: 10_000 },
+        )
+      },
+
       forgetMemory: (bucket: MemoryBucket, text: string) =>
         setPersisted((p) => ({ ...p, memory: forget(p.memory, bucket, text) })),
 
@@ -554,6 +593,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         !GATE_SCREENS.includes(state.screen),
       maxMinutes: persisted.premium ? PREMIUM_MAX_MINUTES : FREE_MAX_MINUTES,
       memoryEmpty: isMemoryEmpty(persisted.memory),
+      skyLine: state.sky ? describeSky(state.sky, lang) : undefined,
     }),
     [state, persisted, actions, lang, tone, caps],
   )

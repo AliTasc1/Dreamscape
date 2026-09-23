@@ -453,6 +453,12 @@ export const tr: Locale = {
     tone: { gentle: 'Sakin', romantic: 'Romantik', mature: 'Yetişkin' },
   },
 
+  sky: {
+    title: 'Bu geceyi gerçek gökyüzüne bağla',
+    body: 'Bulunduğun yerdeki gerçek hava ve gün batımı kullanılsın. İsteğe bağlı; konumun yuvarlanmış bir koordinat dışında uygulamadan çıkmaz.',
+    onWithReading: 'Bu gece bulunduğun yerin havasını takip ediyor.',
+  },
+
   nav: {
     home: 'Ana Sayfa',
     explore: 'Keşfet',

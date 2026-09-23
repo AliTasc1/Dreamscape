@@ -455,6 +455,12 @@ export const en = {
     tone: { gentle: 'Gentle', romantic: 'Romantic', mature: 'Adult' },
   },
 
+  sky: {
+    title: 'Match tonight to the real sky',
+    body: 'Use the actual weather and sunset where you are. Optional, and your location never leaves the app except as a rounded coordinate.',
+    onWithReading: 'Tonight follows the weather where you are.',
+  },
+
   nav: {
     home: 'Home',
     explore: 'Explore',

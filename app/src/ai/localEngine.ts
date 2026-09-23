@@ -632,6 +632,8 @@ export function localNarrate(req: NarrateRequest): string {
   if (isFirst) {
     paragraphs.push(req.plan.openingLine)
     if (req.plan.rememberedLine.trim()) paragraphs.push(req.plan.rememberedLine)
+    // The real sky, once, near the beginning — the one line that is literally true.
+    if (req.sky?.trim()) paragraphs.push(req.sky.trim())
     paragraphs.push(...bank.arrival[reading.scene].slice(0, 2))
     paragraphs.push(pick(bank.reassurance[readFeeling(req)], seed))
   } else if (isLast) {

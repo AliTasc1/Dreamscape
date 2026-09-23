@@ -30,6 +30,8 @@ export interface Persisted {
   prefs: Preferences
   nights: SavedNight[]
   notifOn: Record<string, boolean>
+  /** Opt-in: read the real weather where the listener is. Off until asked for. */
+  useRealSky: boolean
 }
 
 export const INITIAL_PERSISTED: Persisted = {
@@ -42,6 +44,7 @@ export const INITIAL_PERSISTED: Persisted = {
   prefs: DEFAULT_PREFERENCES,
   nights: [],
   notifOn: { bedtime: true, weekly: false, finished: false, quiet: true },
+  useRealSky: false,
 }
 
 function isTone(value: unknown): value is ToneId {
@@ -124,6 +127,7 @@ export function loadPersisted(): Persisted {
       row.notifOn && typeof row.notifOn === 'object'
         ? { ...INITIAL_PERSISTED.notifOn, ...(row.notifOn as Record<string, boolean>) }
         : INITIAL_PERSISTED.notifOn,
+    useRealSky: row.useRealSky === true,
   }
 }
 

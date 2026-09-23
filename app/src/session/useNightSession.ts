@@ -114,6 +114,7 @@ export function useNightSession(): NightSession {
             segments,
             soFar: soFar.current,
             userSaid,
+            sky: current.skyLine,
           },
           current.caps,
           (text) => {

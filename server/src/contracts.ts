@@ -47,6 +47,12 @@ export interface PlanRequest {
   tone: ToneId
   prefs: Preferences
   memory: MemorySnapshot
+  /**
+   * One plain sentence about the real weather where the listener is, from
+   * Open-Meteo, when they turned that on. Optional everywhere: without it the
+   * night is written exactly as before.
+   */
+  sky?: string
 }
 
 /** The companion's reading of the prompt, before a word is spoken. */
@@ -89,6 +95,12 @@ export interface NarrateRequest {
   soFar: string
   /** Something the listener said out loud, if they interrupted. */
   userSaid?: string
+  /**
+   * One plain sentence about the real weather where the listener is, from
+   * Open-Meteo, when they turned that on. Optional everywhere: without it the
+   * night is written exactly as before.
+   */
+  sky?: string
 }
 
 export interface ReflectRequest {

@@ -52,3 +52,40 @@
 .action {
   flex: 1;
 }
+
+.skyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-top: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.track {
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  padding: 3px;
+  background: rgba(234, 236, 247, 0.12);
+  transition: background 0.5s ease;
+  flex: none;
+}
+
+.trackOn {
+  background: rgba(169, 176, 255, 0.55);
+}
+
+.knob {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ink-bright);
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.knobOn {
+  transform: translateX(18px);
+}

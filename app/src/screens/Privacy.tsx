@@ -1,6 +1,7 @@
 import { useI18n } from '../i18n'
 import { useApp } from '../state/appState'
 import { Button } from '../ui/Button'
+import { Pressable } from '../ui/Pressable'
 import { Screen } from '../ui/Screen'
 import styles from './Privacy.module.css'
 
@@ -24,6 +25,22 @@ export function Privacy() {
           </div>
         ))}
       </div>
+
+      {/* The one network call the app makes on its own behalf, and it is opt-in. */}
+      <Pressable
+        className={`${styles.row} ${styles.skyRow}`}
+        onClick={() => app.setUseRealSky(!app.useRealSky)}
+        label={t.sky.title}
+        pressed={app.useRealSky}
+      >
+        <div>
+          <div className={styles.rowTitle}>{t.sky.title}</div>
+          <div className={styles.rowBody}>{app.sky ? t.sky.onWithReading : t.sky.body}</div>
+        </div>
+        <div className={`${styles.track}${app.useRealSky ? ` ${styles.trackOn}` : ''}`}>
+          <div className={`${styles.knob}${app.useRealSky ? ` ${styles.knobOn}` : ''}`} />
+        </div>
+      </Pressable>
 
       <div className={styles.actions}>
         <Button

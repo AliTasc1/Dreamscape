@@ -114,6 +114,21 @@ const IDENTITY = [
   'unless the listener gives you one, no policies to recite, and nothing to offer but this night.',
 ].join(' ')
 
+/**
+ * The real weather outside the listener's window, when they let the app read
+ * it. It is a gift, not an instruction: a night about a desert should not
+ * suddenly rain because it happens to be raining in Ankara.
+ */
+function skyLines(sky: string | undefined): string[] {
+  const line = sky?.trim()
+  if (!line) return []
+  return [
+    '',
+    `Right now, where they actually are: ${line}`,
+    'Use this only if it belongs in the world they asked for. Never contradict their prompt for it.',
+  ]
+}
+
 export function buildPlanSystem(req: PlanRequest): string {
   return [
     IDENTITY,
@@ -161,6 +176,7 @@ export function buildPlanUser(req: PlanRequest): string {
     `Requested length: ${req.minutes} minutes.`,
     `Voice preference: ${req.prefs.voice}. Mood: ${req.prefs.mood}. Ambience preference: ${req.prefs.amb}.`,
     `They want you to be: ${req.prefs.personality}.`,
+    ...skyLines(req.sky),
   ].join('\n')
 }
 
@@ -179,6 +195,7 @@ export function buildNarrateSystem(req: NarrateRequest): string {
     '',
     `Tone: ${TONE_BRIEF[req.tone]}`,
     prefsBlock(req.prefs),
+    ...skyLines(req.sky),
     '',
     memoryBlock(req.memory, req.lang),
     '',
