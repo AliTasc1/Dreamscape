@@ -50,12 +50,24 @@ If the tunnel ever refuses the subdomain because somebody else took it, set
 `EXPO_TUNNEL_SUBDOMAIN` to something else, or to an empty string for a random
 one.
 
-What they get either way is the free app: the night written on their phone and
-read by their phone's voice. `EXPO_PUBLIC_API_BASE` is compiled into the
-bundle, so a hosted narrator or voice would have to be a public HTTPS address
-that is up whenever they are — and this server has no authentication, so a
-public address is an open wallet. Keep the hosted voice on your own machine
-until there is a real deployment behind a login.
+With no server configured, what they get is the free app: the night written on
+their phone and read by their phone's voice.
+
+To give them the hosted narrator and voice instead, the server has to be on a
+real HTTPS address that is up whenever they are — see **Putting it on a
+server** in [`../server/README.md`](../server/README.md) — and both of these go
+into the bundle before you share it:
+
+```bash
+EXPO_PUBLIC_API_BASE=https://your.domain EXPO_PUBLIC_API_TOKEN=<the token> npm run share
+```
+
+`EXPO_PUBLIC_API_TOKEN` is the server's `APP_TOKEN`. Without it a public
+address is an open wallet — the first scanner that finds it starts spending
+your quota. With it, the door is shut to anyone who has not been given the
+app. It is not a login: the token is compiled into the bundle, so it cannot
+tell two listeners apart or revoke one. Keep the address among people you
+know until there are real accounts.
 
 Tell them to download their phone's good voice, too. iOS keeps it in Settings →
 Accessibility → Spoken Content → Voices; Android in Settings → System →

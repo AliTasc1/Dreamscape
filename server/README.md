@@ -105,8 +105,8 @@ deployables, one shape — `tests/drift.test.ts` fails if they stop matching.
 
 ## Before this is on a public address
 
-This service holds your Anthropic and ElevenLabs keys, so a request to it is
-not just data — it is a bill. Three things are already done for you:
+This service holds your Gemini, Anthropic and ElevenLabs keys, so a request to
+it is not data, it is a bill. Four things are already done for you:
 
 - **Nothing over the wire is believed.** `src/validate.ts` checks every field
   and clamps it to something a real night could contain: `minutes` to 120, a
@@ -120,19 +120,101 @@ not just data — it is a bill. Three things are already done for you:
 - **Errors say nothing about the server.** An upstream message can carry a URL,
   a header or a fragment of a key, so it is logged and never returned — the app
   only needs to know whether to retry or write the night itself.
+- **`APP_TOKEN` closes the front door.** Set it and every `/api/` request must
+  carry it as `x-dreamscape-token`, capabilities included; the comparison is
+  constant-time. The app sends it from `EXPO_PUBLIC_API_TOKEN` on a phone or
+  `VITE_API_TOKEN` on the web.
+
+Be clear about what that last one is and is not. The token ships inside the app
+that has to send it, so anybody willing to unpack a bundle can read it. What it
+stops is what actually happens to a public address: a scanner finds it and
+starts spending. It cannot tell two listeners apart, cannot revoke one, and
+cannot say who spent what. That needs real accounts, and this has none — so
+keep the address to people you know until it does.
 
 Two things are still yours to do:
 
 - **Set `CORS_ORIGIN`.** It defaults to `*`, which is right on your own machine
-  and wrong on a public address: with `*` and no authentication, any website
-  can drive your keys.
-- **Put it behind something.** There is no login here. On a public URL, anyone
-  who finds it can spend your credit at 40 requests a minute. A tunnel you
-  share with two people is fine; a permanent public address wants an
-  authenticating proxy in front of it.
+  and wrong on a public address: with `*`, any website can drive your keys.
+- **Put TLS in front of it.** The app refuses a plain-http address that is not
+  on a local network, because a night's narration is the answer to something
+  private.
 
 `tests/server.test.ts` starts this build with no keys, plants a secret file
-above the static root and tries twelve ways of reaching it.
+above the static root, tries twelve ways of reaching it, and checks that every
+endpoint refuses a caller without the token.
+
+## Putting it on a server
+
+Any Linux box with Node 20 or newer. These are the steps for aaPanel, which is
+the same shape anywhere: get the code, build it, keep it running, put a real
+domain and certificate in front of it.
+
+**1. Node and the code.** In aaPanel install **Node.js** from the App Store
+(20 LTS or newer), and **PM2** with it. Then over SSH:
+
+```bash
+cd /www/wwwroot
+git clone https://github.com/AliTasc1/Dreamscape.git
+cd Dreamscape/server
+npm install
+npm run build
+```
+
+**2. The keys.** Create `/www/wwwroot/Dreamscape/server/.env` from
+`.env.example` and fill in what you have. It is gitignored and must stay that
+way. At minimum, for a public server:
+
+```
+GEMINI_API_KEY=AIza...
+ELEVENLABS_API_KEY=...
+ELEVENLABS_VOICE_ID=...
+APP_TOKEN=<a long random string>
+CORS_ORIGIN=https://your.domain
+TRUST_PROXY=1
+PORT=8787
+```
+
+`TRUST_PROXY=1` matters here: behind nginx every request arrives from the
+proxy, so without it the whole internet shares one rate-limit bucket.
+
+```bash
+npm run check          # proves the keys work before anything depends on them
+```
+
+**3. Keep it running.** PM2 restarts it on a crash and on reboot:
+
+```bash
+pm2 start dist/index.js --name dreamscape
+pm2 save
+pm2 startup            # run the line it prints
+pm2 logs dreamscape
+```
+
+**4. A domain and a certificate.** In aaPanel: **Website → Add site** with your
+domain, then that site's **Reverse proxy → Add**, target `http://127.0.0.1:8787`.
+Then **SSL → Let's Encrypt**, issue, and turn on **Force HTTPS**. The app will
+not talk to a plain-http address that is not on a local network, so the
+certificate is not optional.
+
+**5. Point the app at it.** In `mobile/`:
+
+```bash
+EXPO_PUBLIC_API_BASE=https://your.domain EXPO_PUBLIC_API_TOKEN=<the same token> npm run share
+```
+
+Both are compiled into the bundle, so changing either means republishing.
+
+**Firewall:** 8787 should *not* be open to the internet — nginx reaches it on
+localhost. Open 80 and 443 only, in aaPanel's **Security** and at your host's
+firewall if it has one.
+
+**Updating:**
+
+```bash
+cd /www/wwwroot/Dreamscape && git pull
+cd server && npm install && npm run build && pm2 restart dreamscape
+```
 
 ## Running without keys
 

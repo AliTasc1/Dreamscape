@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import * as narrator from './narrator.js'
 import { hasBuild, serveStatic, STATIC_DIR } from './static.js'
@@ -12,6 +13,34 @@ const MAX_BODY = 512 * 1024
 
 /** Every path that accepts a POST. Anything else is a 404, not a hint. */
 const POST_ROUTES = new Set(['/api/plan', '/api/reflect', '/api/narrate', '/api/tts'])
+
+/**
+ * A shared secret between this service and the app, when one is set.
+ *
+ * It is a lock on the front door, not a safe. The token is compiled into the
+ * app that has to send it, so anybody willing to unpack a bundle can read it.
+ * What it does stop is the thing that actually happens: a public address being
+ * found by a scanner or a search engine and quietly spending the operator's
+ * quota. For anything beyond that — per-person limits, revoking one listener,
+ * knowing who spent what — this needs real accounts, and it has none.
+ *
+ * Unset, the service is open, which is right on a laptop and wrong anywhere
+ * with a domain name in front of it.
+ */
+const APP_TOKEN = process.env.APP_TOKEN ?? ''
+
+function tokenOk(req: IncomingMessage): boolean {
+  if (!APP_TOKEN) return true
+  const header = req.headers['x-dreamscape-token']
+  const given = Array.isArray(header) ? header[0] : header
+  if (!given) return false
+
+  // Compared in constant time, so the answer does not leak the token a
+  // character at a time to somebody timing the replies.
+  const a = Buffer.from(given)
+  const b = Buffer.from(APP_TOKEN)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
 
 /**
  * A plain per-address budget.
@@ -119,6 +148,13 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`)
   } catch {
     json(res, 400, { error: 'bad_request', field: 'url' })
+    return
+  }
+
+  // Everything the API offers is behind the token, capabilities included:
+  // knowing what a service can do is a reason to come back and use it.
+  if (url.pathname.startsWith('/api/') && !tokenOk(req)) {
+    json(res, 401, { error: 'unauthorized' })
     return
   }
 
@@ -245,6 +281,9 @@ createServer((req, res) => {
   console.log(`[dreamscape] voice=${caps.voice}`)
   if (caps.narrator === 'none') {
     console.log('[dreamscape] set GEMINI_API_KEY (free tier) or ANTHROPIC_API_KEY to write')
+  }
+  if (!APP_TOKEN) {
+    console.log('[dreamscape] APP_TOKEN is not set — the API is open to anyone who finds it')
   }
   if (await hasBuild()) {
     console.log(`\n[dreamscape] open  http://localhost:${PORT}\n`)

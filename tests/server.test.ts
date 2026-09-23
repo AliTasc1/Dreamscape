@@ -20,6 +20,9 @@ import { after, before, describe, it } from 'node:test'
 
 const SERVER = resolve(__dirname, '..', '..', '..', 'server')
 
+/** The shared secret this test's server is started with. */
+const TOKEN = 'a-token-for-the-tests'
+
 let child: ChildProcess
 let port = 0
 let root = ''
@@ -30,7 +33,10 @@ interface Reply {
   body: string
 }
 
-function fetchRaw(path: string, init: { method?: string; body?: string } = {}): Promise<Reply> {
+function fetchRaw(
+  path: string,
+  init: { method?: string; body?: string; token?: string | null } = {},
+): Promise<Reply> {
   return new Promise((done, fail) => {
     const req = request(
       { host: '127.0.0.1', port, path, method: init.method ?? 'GET' },
@@ -44,6 +50,10 @@ function fetchRaw(path: string, init: { method?: string; body?: string } = {}): 
       },
     )
     req.on('error', fail)
+    // `null` means send nothing; anything else, including the default, sends
+    // the real token so the rest of the suite is not about authentication.
+    const token = init.token === undefined ? TOKEN : init.token
+    if (token !== null) req.setHeader('x-dreamscape-token', token)
     if (init.body !== undefined) {
       req.setHeader('content-type', 'application/json')
       req.write(init.body)
@@ -83,6 +93,7 @@ before(async () => {
       STATIC_DIR: root,
       RATE_MAX: '5',
       RATE_WINDOW_MS: '60000',
+      APP_TOKEN: TOKEN,
       // Explicitly absent, so nothing here can reach a paid API.
       ANTHROPIC_API_KEY: '',
       ANTHROPIC_AUTH_TOKEN: '',
@@ -200,5 +211,44 @@ describe('the per-address budget', () => {
     // The limit is for what costs money, not for the page itself.
     const res = await fetchRaw('/')
     assert.equal(res.status, 200)
+  })
+})
+
+describe('the shared secret', () => {
+  it('refuses an API request that does not carry it', async () => {
+    const res = await fetchRaw('/api/capabilities', { token: null })
+    assert.equal(res.status, 401)
+    assert.equal(JSON.parse(res.body).error, 'unauthorized')
+  })
+
+  it('refuses a wrong one, including one that is merely close', async () => {
+    for (const token of ['', 'wrong', TOKEN.slice(0, -1), `${TOKEN}x`, TOKEN.toUpperCase()]) {
+      const res = await fetchRaw('/api/capabilities', { token })
+      assert.equal(res.status, 401, `accepted "${token}"`)
+    }
+  })
+
+  it('hides even what the service can do, since that is a reason to return', async () => {
+    const res = await fetchRaw('/api/capabilities', { token: null })
+    assert.doesNotMatch(res.body, /narrator|voice|model/)
+  })
+
+  it('refuses every endpoint, not only the ones that cost money', async () => {
+    for (const path of ['/api/plan', '/api/narrate', '/api/tts', '/api/reflect', '/api/voices']) {
+      const res = await fetchRaw(path, { method: 'POST', body: '{}', token: null })
+      assert.equal(res.status, 401, `${path} let a stranger through`)
+    }
+  })
+
+  it('still serves the app itself, which has to load before it can ask', async () => {
+    const res = await fetchRaw('/', { token: null })
+    assert.equal(res.status, 200)
+    assert.match(res.body, /Dreamscape/)
+  })
+
+  it('lets a request with the right one through', async () => {
+    const res = await fetchRaw('/api/capabilities')
+    assert.equal(res.status, 200)
+    assert.equal(JSON.parse(res.body).narrator, 'none')
   })
 })

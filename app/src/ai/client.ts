@@ -22,10 +22,20 @@ function url(path: string): string {
   return `${BASE}${path}`
 }
 
+/**
+ * The shared secret the server asks for, when it asks for one. It ships in
+ * the bundle, so it is a lock on the front door rather than a safe.
+ */
+const TOKEN = (import.meta.env.VITE_API_TOKEN ?? '').trim()
+
+function headers(extra?: Record<string, string>): Record<string, string> {
+  return { ...extra, ...(TOKEN ? { 'x-dreamscape-token': TOKEN } : {}) }
+}
+
 async function postJson<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
   const response = await fetch(url(path), {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: headers({ 'content-type': 'application/json' }),
     body: JSON.stringify(body),
     signal,
   })
@@ -48,6 +58,7 @@ function readCapabilities(payload: unknown): Capabilities {
 export async function fetchCapabilities(): Promise<Capabilities> {
   try {
     const response = await fetch(url('/api/capabilities'), {
+      headers: headers(),
       signal: AbortSignal.timeout(4000),
     })
     if (!response.ok) return OFFLINE
@@ -91,7 +102,7 @@ export async function narrate(
   try {
     response = await fetch(url('/api/narrate'), {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: headers({ 'content-type': 'application/json' }),
       body: JSON.stringify(req),
       signal,
     })
@@ -167,7 +178,7 @@ export async function fetchSpeech(
   try {
     const response = await fetch(url('/api/tts'), {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: headers({ 'content-type': 'application/json' }),
       body: JSON.stringify(body),
       signal,
     })

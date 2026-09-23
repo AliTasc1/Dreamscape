@@ -52,6 +52,18 @@ export function apiBase(): string {
   return BASE
 }
 
+/**
+ * The shared secret the server asks for, when it asks for one.
+ *
+ * Compiled into the bundle, so it is a lock on the front door rather than a
+ * safe — but the front door is what gets tried.
+ */
+const TOKEN = (process.env.EXPO_PUBLIC_API_TOKEN ?? '').trim()
+
+export function apiHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { ...extra, ...(TOKEN ? { 'x-dreamscape-token': TOKEN } : {}) }
+}
+
 export const OFFLINE: Capabilities = { narrator: 'none', voice: 'none', model: null }
 
 /** A server's answer is not trusted any more than a client's request is. */
@@ -71,7 +83,10 @@ export async function fetchCapabilities(): Promise<Capabilities> {
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 4000)
-    const response = await fetch(`${BASE}/api/capabilities`, { signal: controller.signal })
+    const response = await fetch(`${BASE}/api/capabilities`, {
+      headers: apiHeaders(),
+      signal: controller.signal,
+    })
     clearTimeout(timer)
     if (!response.ok) return OFFLINE
     return readCapabilities(await response.json())
@@ -85,7 +100,7 @@ export async function plan(req: PlanRequest, caps: Capabilities): Promise<Sessio
   try {
     const response = await fetch(`${BASE}/api/plan`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: apiHeaders({ 'content-type': 'application/json' }),
       body: JSON.stringify(req),
     })
     if (!response.ok) return localPlan(req)
@@ -100,7 +115,7 @@ export async function reflect(req: ReflectRequest, caps: Capabilities): Promise<
   try {
     const response = await fetch(`${BASE}/api/reflect`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: apiHeaders({ 'content-type': 'application/json' }),
       body: JSON.stringify(req),
     })
     if (!response.ok) return localReflect(req)
@@ -155,7 +170,9 @@ function streamOverXhr(
     xhr.onerror = () => resolve(received)
     xhr.ontimeout = () => resolve(received)
     xhr.open('POST', url)
-    xhr.setRequestHeader('content-type', 'application/json')
+    for (const [name, value] of Object.entries(apiHeaders({ 'content-type': 'application/json' }))) {
+      xhr.setRequestHeader(name, value)
+    }
     xhr.timeout = 120_000
     xhr.send(JSON.stringify(body))
   })

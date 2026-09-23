@@ -1,5 +1,6 @@
 import { createAudioPlayer } from 'expo-audio'
 import { Directory, File, Paths } from 'expo-file-system'
+import { apiHeaders } from '../ai/client'
 import type { TtsRequest } from '../shared/ai/contracts'
 
 /**
@@ -53,7 +54,9 @@ function fetchAudio(url: string, body: TtsRequest): Promise<ArrayBuffer | null> 
       request.open('POST', url)
       request.responseType = 'arraybuffer'
       request.timeout = FETCH_TIMEOUT_MS
-      request.setRequestHeader('content-type', 'application/json')
+      for (const [name, value] of Object.entries(apiHeaders({ 'content-type': 'application/json' }))) {
+        request.setRequestHeader(name, value)
+      }
       request.onload = () => {
         const payload: unknown = request.response
         // A JSON error body arrives as bytes too, so the status decides.
