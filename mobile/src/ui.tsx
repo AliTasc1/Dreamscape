@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
+  Keyboard,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -125,6 +127,9 @@ export function Screen({
         style={styles.fill}
         contentContainerStyle={[padding, style]}
         keyboardShouldPersistTaps="handled"
+        // Scrolling away from a text field puts the keyboard away with it,
+        // so nothing the listener is reaching for stays hidden behind it.
+        keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
       >
         {children}
@@ -290,8 +295,68 @@ export function Wrap({ children }: { children: ReactNode }) {
   return <View style={styles.wrap}>{children}</View>
 }
 
+/**
+ * How much of the screen the keyboard is currently covering.
+ *
+ * iOS slides the keyboard over the window without resizing it, so anything
+ * pinned to the bottom of the screen ends up underneath it. Watching the
+ * height directly works the same way on both platforms and needs no wrapper
+ * around the layout.
+ */
+export function useKeyboardHeight(): number {
+  const [height, setHeight] = useState(0)
+
+  useEffect(() => {
+    // The `Will` events fire with the animation rather than after it, which
+    // matters on iOS; Android only has the `Did` ones.
+    const shown = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (event) => setHeight(event.endCoordinates?.height ?? 0),
+    )
+    const hidden = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setHeight(0),
+    )
+    return () => {
+      shown.remove()
+      hidden.remove()
+    }
+  }, [])
+
+  return height
+}
+
+/**
+ * The one button a screen is really asking for, held above everything else.
+ *
+ * It sits over the navigation bar when there is no keyboard and rides above
+ * the keyboard when there is — which is the whole point: on a screen whose
+ * main control is a text field, a button pinned to the bottom of the window
+ * spends the entire time the listener is typing hidden behind the keyboard.
+ *
+ * `reserve` is what a screen should add to its own bottom padding so the last
+ * line of content is not left underneath this.
+ */
+export const CTA_RESERVE = 96
+
+export function FloatingCta({ children }: { children: ReactNode }) {
+  const insets = useSafeAreaInsets()
+  const keyboard = useKeyboardHeight()
+  const resting = space.navHeight + insets.bottom - 30
+
+  return (
+    <View
+      style={[styles.cta, { bottom: keyboard > 0 ? keyboard + 14 : Math.max(24, resting) }]}
+      pointerEvents="box-none"
+    >
+      {children}
+    </View>
+  )
+}
+
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  cta: { position: 'absolute', left: space.screenX, right: space.screenX },
   eyebrow: {
     fontSize: 10,
     fontWeight: '400',

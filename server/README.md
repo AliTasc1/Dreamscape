@@ -26,26 +26,35 @@ terminal if you want TypeScript recompiling as you edit.
 
 Both are optional and the app runs without either — this is what each one buys.
 
-### Anthropic — who writes the night
+### Who writes the night
 
-1. [console.anthropic.com](https://console.anthropic.com) → **API keys** → create one
-2. Put it in `.env` as `ANTHROPIC_API_KEY=`
-3. `npm run check` — it sends one real planning request and prints the title
-   and persona it came back with
+Either key works, and neither is required. With no key at all the app writes
+the night on the device, which is slower prose but costs nothing and runs on a
+plane.
 
-Credits are bought separately from the key — **Plans & Billing** in the same
-console. A valid key with an empty balance answers `400 credit balance is too
-low`, which `npm run check` reports as such.
+**Gemini — free.** `aistudio.google.com` → Get API key. No card. The free tier
+is a few hundred requests a day, which is a couple of full nights; a night is
+one plan, a segment every few minutes and one reflection. Check
+[the pricing page](https://ai.google.dev/gemini-api/docs/pricing) for today's
+limits rather than trusting a number written here.
 
-**Model.** `claude-opus-5` is the default and the best writer. A night is many
-requests — one plan, then a segment every three minutes — so the model is the
-one lever that really moves the bill; `ANTHROPIC_MODEL` switches it without a
-code change (`claude-sonnet-5` is roughly half the price and still writes
-well). Whoever pays should make that call, not the default.
+```
+GEMINI_API_KEY=AIza...
+```
 
-Without a key at all, `ai/localEngine.ts` in the app writes the night instead:
-it reads the prompt for place, persona and feeling and composes from written
-banks. It works, in both languages, but it is not Claude.
+**Anthropic — paid, and the better writer.** `console.anthropic.com` → API
+keys. Credits are billed separately under Plans & Billing.
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Set both and Anthropic is used, because a paid key is a deliberate act. To go
+the other way, `NARRATOR=gemini`.
+
+Running out of the free tier is a `429`, and it is the likeliest failure of
+all — the app treats it the same as no key at all and writes the night itself,
+so the listener sees a night rather than an error.
 
 ### ElevenLabs — who speaks it
 

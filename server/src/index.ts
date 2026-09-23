@@ -1,9 +1,10 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
-import * as claude from './claude.js'
+import * as narrator from './narrator.js'
 import { hasBuild, serveStatic, STATIC_DIR } from './static.js'
 import { listVoices, synthesize, voiceProvider } from './tts.js'
 import * as validate from './validate.js'
 import { BadRequestError } from './validate.js'
+import { RefusedError } from './shape.js'
 import type { Capabilities } from './contracts.js'
 
 const PORT = Number(process.env.PORT ?? 8787)
@@ -87,7 +88,7 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
  * retry or to fall back to writing the night itself.
  */
 function failure(error: unknown): { status: number; body: Record<string, unknown> } {
-  if (error instanceof claude.RefusedError) {
+  if (error instanceof RefusedError) {
     return { status: 422, body: { error: 'refused', category: error.category } }
   }
   if (error instanceof BadRequestError) {
@@ -98,11 +99,10 @@ function failure(error: unknown): { status: number; body: Record<string, unknown
 }
 
 function capabilities(): Capabilities {
-  const narratorReady = claude.hasCredentials()
   return {
-    narrator: narratorReady ? 'claude' : 'none',
+    narrator: narrator.provider(),
     voice: voiceProvider(),
-    model: narratorReady ? claude.MODEL : null,
+    model: narrator.model(),
   }
 }
 
@@ -167,8 +167,8 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   }
 
   // Everything below needs a narrator; say so plainly instead of failing oddly.
-  const needsClaude = url.pathname !== '/api/tts'
-  if (needsClaude && !claude.hasCredentials()) {
+  const needsNarrator = url.pathname !== '/api/tts'
+  if (needsNarrator && !narrator.hasCredentials()) {
     json(res, 503, { error: 'not_configured', what: 'narrator' })
     return
   }
@@ -176,12 +176,12 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   try {
     switch (url.pathname) {
       case '/api/plan': {
-        json(res, 200, await claude.plan(validate.planRequest(await readBody(req))))
+        json(res, 200, await narrator.plan(validate.planRequest(await readBody(req))))
         return
       }
 
       case '/api/reflect': {
-        json(res, 200, await claude.reflect(validate.reflectRequest(await readBody(req))))
+        json(res, 200, await narrator.reflect(validate.reflectRequest(await readBody(req))))
         return
       }
 
@@ -195,7 +195,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
         })
         const send = (event: unknown) => res.write(`data: ${JSON.stringify(event)}\n\n`)
         try {
-          for await (const text of claude.narrate(body)) send({ type: 'delta', text })
+          for await (const text of narrator.narrate(body)) send({ type: 'delta', text })
           send({ type: 'done' })
         } catch (error) {
           const { body: payload } = failure(error)
@@ -244,7 +244,7 @@ createServer((req, res) => {
   console.log(`\n[dreamscape] narrator=${caps.narrator}${caps.model ? ` (${caps.model})` : ''}`)
   console.log(`[dreamscape] voice=${caps.voice}`)
   if (caps.narrator === 'none') {
-    console.log('[dreamscape] set ANTHROPIC_API_KEY to write nights with Claude')
+    console.log('[dreamscape] set GEMINI_API_KEY (free tier) or ANTHROPIC_API_KEY to write')
   }
   if (await hasBuild()) {
     console.log(`\n[dreamscape] open  http://localhost:${PORT}\n`)

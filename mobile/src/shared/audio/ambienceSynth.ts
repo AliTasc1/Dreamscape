@@ -219,6 +219,16 @@ interface Event {
   trill: number
   /** How long the event keeps going before it is only decaying. */
   hold: number
+  /**
+   * Seconds to reach full volume. A raindrop is instant; an owl swells, and
+   * given an instant attack it would sound like a doorbell instead.
+   */
+  attack?: number
+  /**
+   * How far the pitch moves across the event, as a fraction. An owl's hoot
+   * falls away at the end; -0.08 is most of what makes it read as an owl.
+   */
+  bend?: number
 }
 
 function schedule(
@@ -256,20 +266,25 @@ function mixEvents(
     const life = Math.min(total - event.at, Math.ceil((event.decay * 6 + event.hold) * rate))
     if (life <= 0) continue
     const k = 1 / (event.decay * rate)
-    const step = (2 * Math.PI * event.hz) / rate
     const trillStep = event.trill > 0 ? (2 * Math.PI * event.trill) / rate : 0
     const gainL = event.gain * Math.sqrt((1 - event.pan) / 2)
     const gainR = event.gain * Math.sqrt((1 + event.pan) / 2)
     const holdFrames = event.hold * rate
+    const attackFrames = Math.max(1, (event.attack ?? 0.0015) * rate)
+    const bend = event.bend ?? 0
 
+    // The pitch can move, so the phase is accumulated rather than computed.
+    let phase = 0
     for (let i = 0; i < life; i++) {
       const index = event.at + i
-      // A fast rise, or the attack clicks.
-      const attack = Math.min(1, i / (0.0015 * rate))
+      const attack = Math.min(1, i / attackFrames)
       const envelope = i < holdFrames ? attack : attack * Math.exp(-(i - holdFrames) * k)
-      if (envelope < 0.0005) break
+      if (envelope < 0.0005 && i > attackFrames) break
+
+      const hz = event.hz * (1 + (bend * i) / life)
+      phase += (2 * Math.PI * hz) / rate
       const trill = trillStep > 0 ? 0.5 + 0.5 * Math.sin(trillStep * i) : 1
-      const body = Math.sin(step * i) * (1 - noisiness) + white(random) * noisiness
+      const body = Math.sin(phase) * (1 - noisiness) + white(random) * noisiness
       const value = body * envelope * trill
       left[index] += value * gainL
       right[index] += value * gainR
@@ -340,6 +355,41 @@ function rain(c: Canvas): void {
     rate,
     random,
     0.35,
+  )
+
+  // A second layer, lower and quieter: the rain that is falling further away.
+  // Rain with one distance to it sounds like a shower head.
+  mixEvents(
+    schedule(random, frames, 40, rate, (r2) => ({
+      hz: 300 + r2() * 600,
+      decay: 0.01 + r2() * 0.03,
+      gain: 0.02 + r2() * 0.05,
+      pan: white(r2) * 0.6,
+      trill: 0,
+      hold: 0,
+    })),
+    left,
+    right,
+    rate,
+    random,
+    0.5,
+  )
+
+  // Now and then a big one off a leaf, close by.
+  mixEvents(
+    schedule(random, frames, 2.2, rate, (r2) => ({
+      hz: 500 + r2() * 700,
+      decay: 0.03 + r2() * 0.05,
+      gain: 0.1 + r2() * 0.16,
+      pan: white(r2) * 0.9,
+      trill: 0,
+      hold: 0,
+    })),
+    left,
+    right,
+    rate,
+    random,
+    0.3,
   )
 }
 
@@ -513,6 +563,9 @@ function forest(c: Canvas): void {
     random,
     0.7,
   )
+
+  // And an owl, three or four times a minute, from further in.
+  owls(c, 3.5, 0.13)
 }
 
 function night(c: Canvas): void {
@@ -556,6 +609,9 @@ function night(c: Canvas): void {
     random,
     0.08,
   )
+
+  // Further off than the forest's, and rarer.
+  owls(c, 1.6, 0.08)
 }
 
 function cafe(c: Canvas): void {
@@ -617,6 +673,48 @@ function cafe(c: Canvas): void {
     random,
     0.2,
   )
+}
+
+/**
+ * A tawny owl, twice, from somewhere off among the trees.
+ *
+ * Almost a pure tone around four hundred hertz that swells rather than starts,
+ * falls away in pitch at the end, and comes in a pair a beat apart. The swell
+ * and the fall are what make it an owl; without them it is a doorbell.
+ *
+ * Rare on purpose. Something you hear four or five times in a night belongs to
+ * the place; something you hear every eight seconds belongs to a sound effect.
+ */
+function owls(c: Canvas, perMinute: number, gain: number): void {
+  const { left, right, rate, frames, random } = c
+  const calls = Math.max(1, Math.round((frames / rate / 60) * perMinute))
+
+  const events: Event[] = []
+  for (let i = 0; i < calls; i++) {
+    // Well clear of the loop's tail, so the pair is never cut in half.
+    const at = Math.floor(random() * (frames - rate * 2))
+    const hz = 330 + random() * 150
+    const pan = white(random) * 0.8
+    const far = 0.45 + random() * 0.55
+    const shape = (start: number, hold: number, level: number): Event => ({
+      at: start,
+      hz,
+      decay: 0.09,
+      gain: gain * far * level,
+      pan,
+      trill: 0,
+      hold,
+      // Slow enough to swell; a hoot has no edge to it.
+      attack: 0.055,
+      // The pitch sags at the end, which is the whole character of the call.
+      bend: -0.07,
+    })
+    // "hoo — hoooo": a short first note, then a longer second one.
+    events.push(shape(at, 0.16, 0.75))
+    events.push(shape(at + Math.floor(rate * (0.42 + random() * 0.18)), 0.3, 1))
+  }
+
+  mixEvents(events, left, right, rate, random, 0.05)
 }
 
 const BEDS: Record<AmbienceKind, (c: Canvas) => void> = {

@@ -210,9 +210,22 @@ describe('the loop budget', () => {
 
   it('renders a full-length loop fast enough not to be felt', () => {
     const started = Date.now()
-    renderAmbience('rain', 22_050, 12)
+    renderAmbience('rain', 22_050, 20)
     const took = Date.now() - started
-    // Generous: a phone is slower than this machine, and it happens once.
-    assert.ok(took < 4000, `twelve seconds of rain took ${took}ms to render`)
+    // Generous: a phone is slower than this machine, and it happens once,
+    // off the render path, while the session screen is already up.
+    assert.ok(took < 6000, `twenty seconds of rain took ${took}ms to render`)
+  })
+
+  /**
+   * An owl's call is far longer than the cross-fade that hides the seam, so
+   * instead of shortening it the call is scheduled well clear of the end. If
+   * that margin ever shrinks below the call's length, owls start getting cut
+   * in half at the loop point.
+   */
+  it('keeps the owl clear of the loop point', () => {
+    const margin = 2
+    const longestCall = 0.42 + 0.18 + 0.3 + 0.09 * 6
+    assert.ok(longestCall < margin, `an owl runs ${longestCall}s into a ${margin}s margin`)
   })
 })

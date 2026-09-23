@@ -4,7 +4,7 @@ import { useI18n } from '../i18n'
 import { PREMIUM_DURATIONS, THEME_IDS, maxMinutesFor } from '../shared/domain/options'
 import { useApp } from '../state/appState'
 import { color } from '../theme'
-import { Button, Card, Chip, Eyebrow, Row, Screen, UiText, VoiceText, Wrap } from '../ui'
+import { Button, Card, Chip, CTA_RESERVE, Eyebrow, FloatingCta, Row, Screen, UiText, VoiceText, Wrap } from '../ui'
 
 export function Create() {
   const { t, minutes } = useI18n()
@@ -20,7 +20,9 @@ export function Create() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen scroll>
+      {/* The extra padding is the room the button below needs, or the last
+          line of this screen ends up underneath it. */}
+      <Screen scroll style={{ paddingBottom: CTA_RESERVE + 140 }}>
         <VoiceText size={26} italic={false} tone={color.inkBright}>
           {t.create.heading}
         </VoiceText>
@@ -106,7 +108,7 @@ export function Create() {
         </VoiceText>
       </Screen>
 
-      <View style={styles.cta}>
+      <FloatingCta>
         <Button
           label={app.prompt.trim() ? t.create.cta : t.create.emptyPrompt}
           variant="gradientEmber"
@@ -116,7 +118,7 @@ export function Create() {
           disabled={!app.prompt.trim()}
           onPress={app.startNight}
         />
-      </View>
+      </FloatingCta>
     </View>
   )
 }
@@ -189,7 +191,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   input: { minHeight: 120, fontSize: 15, lineHeight: 26, color: color.ink, fontWeight: '300' },
-  cta: { position: 'absolute', left: 22, right: 22, bottom: 118 },
   orb: {
     width: 104,
     height: 104,

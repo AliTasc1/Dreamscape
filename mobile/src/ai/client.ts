@@ -59,7 +59,8 @@ function readCapabilities(payload: unknown): Capabilities {
   if (!payload || typeof payload !== 'object') return OFFLINE
   const raw = payload as Record<string, unknown>
   return {
-    narrator: raw.narrator === 'claude' ? 'claude' : 'none',
+    narrator:
+      raw.narrator === 'claude' ? 'claude' : raw.narrator === 'gemini' ? 'gemini' : 'none',
     voice: raw.voice === 'elevenlabs' ? 'elevenlabs' : raw.voice === 'openai' ? 'openai' : 'none',
     model: typeof raw.model === 'string' ? raw.model.slice(0, 80) : null,
   }
@@ -80,7 +81,7 @@ export async function fetchCapabilities(): Promise<Capabilities> {
 }
 
 export async function plan(req: PlanRequest, caps: Capabilities): Promise<SessionPlan> {
-  if (caps.narrator !== 'claude' || !BASE) return localPlan(req)
+  if (caps.narrator === 'none' || !BASE) return localPlan(req)
   try {
     const response = await fetch(`${BASE}/api/plan`, {
       method: 'POST',
@@ -95,7 +96,7 @@ export async function plan(req: PlanRequest, caps: Capabilities): Promise<Sessio
 }
 
 export async function reflect(req: ReflectRequest, caps: Capabilities): Promise<Reflection> {
-  if (caps.narrator !== 'claude' || !BASE) return localReflect(req)
+  if (caps.narrator === 'none' || !BASE) return localReflect(req)
   try {
     const response = await fetch(`${BASE}/api/reflect`, {
       method: 'POST',
@@ -174,7 +175,7 @@ export async function narrate(
   caps: Capabilities,
   onDelta: (text: string) => void,
 ): Promise<void> {
-  if (caps.narrator === 'claude' && BASE) {
+  if (caps.narrator !== 'none' && BASE) {
     const served = await streamOverXhr(`${BASE}/api/narrate`, req, onDelta)
     if (served) return
   }

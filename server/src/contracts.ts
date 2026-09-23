@@ -129,10 +129,17 @@ export interface TtsRequest {
   tone: ToneId
 }
 
+/**
+ * Who writes the night. Anthropic writes the better one and bills for it;
+ * Gemini's free tier covers a couple of nights a day at no cost. `none` means
+ * the device writes it itself, which every build can always do.
+ */
+export type NarratorId = 'claude' | 'gemini' | 'none'
+
 export interface Capabilities {
   /** Who writes the narration. */
-  narrator: 'claude' | 'none'
-  /** Who speaks it. `none` means the app falls back to the browser. */
+  narrator: NarratorId
+  /** Who speaks it. `none` means the app falls back to the device. */
   voice: 'elevenlabs' | 'openai' | 'none'
   model: string | null
 }

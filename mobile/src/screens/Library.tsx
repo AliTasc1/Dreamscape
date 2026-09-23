@@ -5,7 +5,7 @@ import { CATEGORY_IDS } from '../shared/domain/options'
 import { paletteForAmbience } from '../shared/palettes'
 import { useApp } from '../state/appState'
 import { color } from '../theme'
-import { Button, Card, Chip, Row, Screen, UiText, VoiceText } from '../ui'
+import { Button, Card, Chip, CTA_RESERVE, FloatingCta, Row, Screen, UiText, VoiceText } from '../ui'
 
 export function Explore() {
   const { t } = useI18n()
@@ -152,7 +152,7 @@ export function DreamDetail() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen scroll>
+      <Screen scroll style={{ paddingBottom: CTA_RESERVE + 140 }}>
         <View style={styles.hero}>
           <NightScene palette={paletteForAmbience(night?.ambience ?? 'rain')} moonX={0.66} />
         </View>
@@ -197,7 +197,7 @@ export function DreamDetail() {
         </Row>
       </Screen>
 
-      <View style={styles.cta}>
+      <FloatingCta>
         <Button
           label={t.detail.replay}
           block
@@ -208,7 +208,7 @@ export function DreamDetail() {
             app.startNight()
           }}
         />
-      </View>
+      </FloatingCta>
     </View>
   )
 }
@@ -227,5 +227,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(234,236,247,0.07)',
   },
-  cta: { position: 'absolute', left: 22, right: 22, bottom: 118 },
 })

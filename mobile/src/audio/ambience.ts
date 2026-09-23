@@ -17,10 +17,15 @@ import type { AmbienceId } from '../shared/domain/options'
  */
 
 const RATE = 22_050
-/** Long enough that the ear stops noticing it comes back around. */
-const SECONDS = 12
+/**
+ * Long enough that the ear stops noticing it comes back around. Twenty
+ * seconds rather than twelve because the rarest things in here — an owl, a log
+ * giving way — happen a few times a minute, and on a short loop the ear learns
+ * exactly when they are coming.
+ */
+const SECONDS = 20
 /** Bump when the synthesis changes, or phones keep playing the old loop. */
-const VERSION = 2
+const VERSION = 3
 
 function isKind(ambience: AmbienceId): ambience is AmbienceKind {
   return ambience !== 'none'

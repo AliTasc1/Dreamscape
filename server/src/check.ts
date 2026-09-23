@@ -1,13 +1,14 @@
 /**
  * `npm run check` — proves the keys work before the app depends on them.
  *
- * Each provider is exercised for real: one small Claude request, one listing of
- * the account's ElevenLabs voices, one second of actual speech. Anything that
- * fails prints the reason and what to do about it, rather than a stack trace.
+ * Each provider is exercised for real: one small request to whichever narrator
+ * is configured, one listing of the account's ElevenLabs voices, and one
+ * second of actual speech. Anything that fails prints the reason and what to
+ * do about it, rather than a stack trace.
  */
 
 import { writeFileSync } from 'node:fs'
-import * as claude from './claude.js'
+import * as narrator from './narrator.js'
 import { listVoices, synthesize, voiceProvider } from './tts.js'
 
 const ok = (line: string) => console.log(`  ✓ ${line}`)
@@ -58,44 +59,58 @@ function inspectKey(raw: string, label: string, prefix: string, minLength: numbe
   return sound
 }
 
-async function checkClaude(): Promise<boolean> {
-  console.log('\nNarrator — Anthropic')
-  if (!claude.hasCredentials()) {
-    bad('ANTHROPIC_API_KEY is not set')
-    hint('Get one at console.anthropic.com, then put it in server/.env')
-    hint('Without it the app writes nights with its own local engine.')
+/** One prompt, the same for whichever narrator is configured. */
+const SAMPLE = {
+  lang: 'en',
+  prompt: 'A quiet beach at midnight. Rain is falling. Talk to me like an old friend.',
+  minutes: 10,
+  tone: 'gentle',
+  prefs: {
+    voice: 'warm',
+    mood: 'calm',
+    amb: 'rain',
+    personality: 'gentle',
+    style: 'story',
+    speed: 'slow',
+    intensity: 'soft',
+  },
+  memory: { themes: [], feelings: [], personas: [], moments: [], nights: 0 },
+} as const
+
+async function checkNarrator(): Promise<boolean> {
+  const who = narrator.provider()
+  console.log(`\nNarrator — ${who === 'gemini' ? 'Gemini' : who === 'claude' ? 'Anthropic' : 'none'}`)
+
+  if (who === 'none') {
+    bad('neither GEMINI_API_KEY nor ANTHROPIC_API_KEY is set')
+    hint('Free: aistudio.google.com → Get API key. No card, a few hundred a day.')
+    hint('Paid, and the better writer: console.anthropic.com → API keys.')
+    hint('Without either the app writes nights with its own local engine.')
     return false
   }
 
-  if (!inspectKey(process.env.ANTHROPIC_API_KEY ?? '', 'ANTHROPIC_API_KEY', 'sk-ant-', 40)) {
-    hint('Create a fresh one at console.anthropic.com → API keys.')
+  // Key shapes differ, and a mangled paste is the commonest failure of all.
+  if (who === 'claude') {
+    if (!inspectKey(process.env.ANTHROPIC_API_KEY ?? '', 'ANTHROPIC_API_KEY', 'sk-ant-', 40)) {
+      hint('Create a fresh one at console.anthropic.com → API keys.')
+      return false
+    }
+  } else if (!inspectKey(process.env.GEMINI_API_KEY ?? '', 'GEMINI_API_KEY', 'AIza', 30)) {
+    hint('Create a fresh one at aistudio.google.com → Get API key.')
     return false
   }
 
   try {
-    const plan = await claude.plan({
-      lang: 'en',
-      prompt: 'A quiet beach at midnight. Rain is falling. Talk to me like an old friend.',
-      minutes: 10,
-      tone: 'gentle',
-      prefs: {
-        voice: 'warm',
-        mood: 'calm',
-        amb: 'rain',
-        personality: 'gentle',
-        style: 'story',
-        speed: 'slow',
-        intensity: 'soft',
-      },
-      memory: { themes: [], feelings: [], personas: [], moments: [], nights: 0 },
-    })
-    ok(`${claude.MODEL} answered`)
+    const plan = await narrator.plan({ ...SAMPLE, prefs: { ...SAMPLE.prefs }, memory: { ...SAMPLE.memory, themes: [], feelings: [], personas: [], moments: [] } })
+    ok(`${narrator.model()} answered`)
     ok(`it planned "${plan.title}" — you become ${plan.persona.who || '(unnamed)'}`)
     return true
   } catch (error) {
-    bad(`request failed: ${reason(error)}`)
-    if (reason(error).includes('401')) hint('The key is wrong or revoked.')
-    if (reason(error).includes('credit')) hint('The account is out of credit.')
+    const why = reason(error)
+    bad(`request failed: ${why}`)
+    if (why.includes('401') || why.includes('403')) hint('The key is wrong or revoked.')
+    if (why.includes('credit')) hint('The account is out of credit.')
+    if (why.includes('429')) hint("Out of today's free requests, or too many at once.")
     return false
   }
 }
@@ -189,14 +204,14 @@ async function checkVoice(): Promise<boolean> {
   }
 }
 
-const narrator = await checkClaude()
+const narratorReady = await checkNarrator()
 const voice = await checkVoice()
 
 console.log('\n' + '─'.repeat(52))
-console.log(`narrator: ${narrator ? 'Claude' : 'local engine'}`)
+console.log(`narrator: ${narratorReady ? `${narrator.provider()} (${narrator.model()})` : 'local engine'}`)
 console.log(`voice:    ${voice ? voiceProvider() : 'browser speech synthesis'}`)
 console.log(
-  narrator && voice
+  narratorReady && voice
     ? 'Both ready. Start the server with `npm start`.'
     : 'The app still runs — the parts above just fall back.',
 )
