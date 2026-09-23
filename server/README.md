@@ -154,15 +154,33 @@ domain and certificate in front of it.
 (20 LTS or newer), and **PM2** with it. Then over SSH:
 
 ```bash
-cd /www/wwwroot
+cd ~
 git clone https://github.com/AliTasc1/Dreamscape.git
 cd Dreamscape/server
 npm install
 npm run build
 ```
 
-**2. The keys.** Create `/www/wwwroot/Dreamscape/server/.env` from
-`.env.example` and fill in what you have. It is gitignored and must stay that
+Your home directory, not `/www/wwwroot`. That folder is nginx's, owned by
+root, and it is for sites nginx serves directly off disk. This one listens on
+a port and hides behind nginx, so where the code lives is nobody's business
+but yours — and cloning into `/www/wwwroot` as an ordinary user just earns a
+`Permission denied`.
+
+If `node` is not found after installing it through aaPanel, its Node lives
+outside the default `PATH`. Find it and add it:
+
+```bash
+ls /www/server/nodejs
+echo 'export PATH=/www/server/nodejs/v20.19.0/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+node -v
+```
+
+Use whatever version `ls` actually printed.
+
+**2. The keys.** Create `~/Dreamscape/server/.env` from `.env.example` and
+fill in what you have. It is gitignored and must stay that
 way. At minimum, for a public server:
 
 ```
@@ -212,7 +230,7 @@ firewall if it has one.
 **Updating:**
 
 ```bash
-cd /www/wwwroot/Dreamscape && git pull
+cd ~/Dreamscape && git pull
 cd server && npm install && npm run build && pm2 restart dreamscape
 ```
 
