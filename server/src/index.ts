@@ -1,5 +1,8 @@
 import { timingSafeEqual } from 'node:crypto'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { existsSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as narrator from './narrator.js'
 import { hasBuild, serveStatic, STATIC_DIR } from './static.js'
 import { listVoices, synthesize, voiceProvider } from './tts.js'
@@ -7,6 +10,35 @@ import * as validate from './validate.js'
 import { BadRequestError } from './validate.js'
 import { RefusedError } from './shape.js'
 import type { Capabilities } from './contracts.js'
+
+/**
+ * Reads `.env` itself, rather than trusting how it was started.
+ *
+ * `npm start` passes `--env-file-if-exists`, but a process manager runs
+ * `node dist/index.js` directly and that flag is nowhere — so the keys are
+ * silently absent and the service reports having no narrator and no voice
+ * while looking otherwise healthy. It is a miserable thing to debug, and the
+ * fix is for the service to go and look.
+ *
+ * `.env` sits beside `package.json`, one level above `dist/`. Anything
+ * already in the environment wins, so a real deployment can set variables
+ * however it likes.
+ */
+function loadDotEnv(): void {
+  if (typeof process.loadEnvFile !== 'function') return
+  const here = dirname(fileURLToPath(import.meta.url))
+  for (const path of [join(here, '..', '.env'), join(process.cwd(), '.env')]) {
+    if (!existsSync(path)) continue
+    try {
+      process.loadEnvFile(path)
+      return
+    } catch {
+      // A malformed file is not worth refusing to start over.
+    }
+  }
+}
+
+loadDotEnv()
 
 const PORT = Number(process.env.PORT ?? 8787)
 const MAX_BODY = 512 * 1024

@@ -12,7 +12,7 @@
 
 import assert from 'node:assert/strict'
 import { spawn, type ChildProcess } from 'node:child_process'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { request } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -250,5 +250,87 @@ describe('the shared secret', () => {
     const res = await fetchRaw('/api/capabilities')
     assert.equal(res.status, 200)
     assert.equal(JSON.parse(res.body).narrator, 'none')
+  })
+})
+
+/**
+ * The keys arriving however the process was started.
+ *
+ * `npm start` passes `--env-file-if-exists`; a process manager runs
+ * `node dist/index.js` and that flag is nowhere. When the service did not go
+ * and read `.env` itself, the result was a server that looked healthy and
+ * reported having no narrator and no voice, which is a miserable thing to
+ * debug from the outside.
+ */
+describe('reading .env without being told to', () => {
+  const cwd = resolve(__dirname, '..', '..', '..', 'server')
+  const envPath = join(cwd, '.env')
+  let child: ChildProcess
+  let envPort = 0
+
+  before(async () => {
+    // The real file must never be touched; refuse rather than overwrite one.
+    assert.equal(existsSync(envPath), false, 'a real server/.env exists — not touching it')
+    writeFileSync(envPath, ['APP_TOKEN=from-the-env-file', 'GEMINI_API_KEY=AIzaNotReal'].join('\n'))
+
+    envPort = 9900 + Math.floor(Math.random() * 90)
+    // Genuinely absent, not set to empty: `loadEnvFile` leaves a variable
+    // alone once it exists, which is what keeps the suite above hermetic.
+    const env: NodeJS.ProcessEnv = { ...process.env, PORT: String(envPort) }
+    for (const key of [
+      'APP_TOKEN',
+      'GEMINI_API_KEY',
+      'ANTHROPIC_API_KEY',
+      'ANTHROPIC_AUTH_TOKEN',
+      'NARRATOR',
+    ]) {
+      delete env[key]
+    }
+
+    child = spawn(process.execPath, ['dist/index.js'], {
+      cwd,
+      // Deliberately no --env-file flag: the service has to go and look.
+      env,
+      stdio: 'ignore',
+    })
+
+    for (let attempt = 0; attempt < 100; attempt++) {
+      try {
+        await ask('/api/capabilities', 'from-the-env-file')
+        return
+      } catch {
+        await new Promise((r) => setTimeout(r, 100))
+      }
+    }
+    throw new Error('server never came up')
+  }, { timeout: 30_000 })
+
+  after(() => {
+    child?.kill()
+    rmSync(envPath, { force: true })
+  })
+
+  function ask(path: string, token: string | null): Promise<Reply> {
+    return new Promise((done, fail) => {
+      const req = request({ host: '127.0.0.1', port: envPort, path }, (res) => {
+        let body = ''
+        res.setEncoding('utf8')
+        res.on('data', (chunk) => (body += chunk))
+        res.on('end', () => done({ status: res.statusCode ?? 0, headers: res.headers, body }))
+      })
+      req.on('error', fail)
+      if (token !== null) req.setHeader('x-dreamscape-token', token)
+      req.end()
+    })
+  }
+
+  it('picks up the token from the file nobody pointed it at', async () => {
+    assert.equal((await ask('/api/capabilities', null)).status, 401)
+    assert.equal((await ask('/api/capabilities', 'from-the-env-file')).status, 200)
+  })
+
+  it('picks up the narrator from it too', async () => {
+    const res = await ask('/api/capabilities', 'from-the-env-file')
+    assert.equal(JSON.parse(res.body).narrator, 'gemini')
   })
 })
