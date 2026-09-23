@@ -1,0 +1,15 @@
+# Never, in any project in this repository.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+node_modules
+dist
+build
+.expo
+
+*.log
+*.tsbuildinfo
+.DS_Store

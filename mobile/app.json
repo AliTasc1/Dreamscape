@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Dreamscape",
+    "slug": "dreamscape",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "dreamscape",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#05070F",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#05070F"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.alitasci.dreamscape",
+      "buildNumber": "1",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"],
+        "NSLocationWhenInUseUsageDescription": "Dreamscape can match tonight to the real weather and sunset where you are. This is optional and your location never leaves the app except as a rounded coordinate sent to a public weather service.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.alitasci.dreamscape",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#05070F"
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION"],
+      "blockedPermissions": ["ACCESS_FINE_LOCATION", "RECORD_AUDIO"],
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Dreamscape can match tonight to the real weather and sunset where you are. This is optional."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
